@@ -178,6 +178,44 @@
   .d26 .row > :not(.big) { position: relative; z-index: 1; }
   @keyframes float { 50% { transform: translateY(-8px); } }
 
+  /* 11 — Confirmation */
+  .toast { position: absolute; left: 12px; right: 12px; bottom: 10px; z-index: 4; display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 14px; background: var(--cink); color: var(--cbg); font-size: 14px; font-weight: 600; transform: translateY(calc(100% + 14px)); transition: transform .35s cubic-bezier(.2,.8,.2,1); }
+  .toast svg { width: 16px; height: 16px; flex: none; }
+  .toast .undo { margin-left: auto; border: 0; background: none; color: inherit; opacity: .7; font: 600 14px Inter, sans-serif; text-decoration: underline; cursor: pointer; padding: 0; }
+  .toast.show { transform: none; }
+
+  /* 12 — Sélecteur */
+  .seg { position: relative; margin: 0; display: grid; grid-template-columns: 1fr 1fr; padding: 3px; border-radius: 12px; background: var(--cchip); border: 0; cursor: pointer; font: 600 13px Inter, sans-serif; color: var(--muted); }
+  .seg::before { content: ""; position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px); border-radius: 9px; background: var(--cbg); box-shadow: 0 1px 3px rgba(0,0,0,.12); transition: transform .3s cubic-bezier(.3,.9,.3,1); }
+  .seg span { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 28px; transition: color .25s; }
+  .seg svg { width: 14px; height: 14px; }
+  .seg span:first-child, .anon .seg span:last-child { color: var(--cink); }
+  .anon .seg span:first-child { color: var(--muted); }
+  .anon .seg::before { transform: translateX(100%); }
+
+  /* 13 — Info-bulle */
+  .tip { position: absolute; bottom: calc(100% + 10px); z-index: 4; white-space: nowrap; padding: 7px 11px; border-radius: 10px; background: var(--cink); color: var(--cbg); font-size: 13px; font-weight: 600; opacity: 0; transform: translate(-50%, 4px); pointer-events: none; transition: opacity .25s, transform .25s; }
+  .tip::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -6px; border: 6px solid transparent; border-top-color: var(--cink); }
+  .tip.show { opacity: 1; transform: translate(-50%, 0); }
+  .d33 .acts { position: relative; }
+
+  /* 14 — Bouton scindé */
+  .split { position: absolute; top: 0; right: 0; bottom: 0; width: 0; display: grid; place-items: center; overflow: hidden; border-left: 1px solid rgba(255,255,255,.35); opacity: 0; transition: width .3s ease, opacity .3s ease; }
+  .split svg { width: 16px; height: 16px; }
+  .d34.anon.voted .btn.on .split { width: 44px; opacity: 1; }
+  .d34.anon.voted .btn.on { padding-right: 44px; transition: padding .3s ease, background .3s, color .3s; }
+
+  /* 15 — Voter en tant que */
+  .chip { margin: 0; display: inline-grid; align-items: center; border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px 3px 4px; background: transparent; cursor: pointer; font: 600 13px Inter, sans-serif; color: var(--cink); }
+  .chip > span { grid-area: 1 / 1; display: inline-flex; align-items: center; gap: 6px; transition: opacity .25s, transform .25s; }
+  .chip .me { width: 20px; height: 20px; border-radius: 50%; background: #C9D8EE; color: #2F4A6B; display: grid; place-items: center; font-size: 11px; }
+  .chip .gh { width: 20px; height: 20px; border-radius: 50%; background: var(--cink); color: var(--cbg); display: grid; place-items: center; }
+  .chip .gh svg { width: 13px; height: 13px; }
+  .chip .as-anon { opacity: 0; transform: translateY(6px); }
+  .anon .chip .as-me { opacity: 0; transform: translateY(-6px); }
+  .anon .chip .as-anon { opacity: 1; transform: none; }
+  .anon .chip { border-color: var(--cink); }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   }
@@ -198,7 +236,7 @@
 <div class="wrap">
   <header>
     <h1>Mode fantôme, en mouvement</h1>
-    <p>Le take est celui de Giulia : tu votes dessus. Les cinq retenues en tête (1 + 2, 01, 02, 03, 04), puis six nouvelles pistes, 05 à 10, pour faire réagir la carte quand tu passes en anonyme avant de voter, sans jamais toucher à l'auteur. Aucune ne reprend les sept de la première page. Chaque carte est à l'échelle de l'app (390 pt), avec ses vraies couleurs.</p>
+    <p>Le take est celui de Giulia : tu votes dessus. Les cinq retenues en tête (1 + 2, 01, 02, 03, 04), les pistes d'ambiance 05 à 10, puis cinq pistes plus sérieuses, 11 à 15, pour faire réagir la carte quand tu passes en anonyme avant de voter, sans jamais toucher à l'auteur. Aucune ne reprend les sept de la première page. Chaque carte est à l'échelle de l'app (390 pt), avec ses vraies couleurs.</p>
     <div class="how"><span>1. Appuie sur le fantôme</span><span>2. Vote Non ou Oui</span><span>3. « Rejouer » pour recommencer</span></div>
   </header>
   <div class="grid" id="grid"></div>
@@ -222,6 +260,11 @@
     ['Givre', 'En anonyme, du givre se forme doucement dans les coins de la carte. Ton vote se fait normalement, la carte reste « gelée ».', '08', 24],
     ['Respiration', 'Tant que tu es en anonyme, le contour de la carte et le fantôme respirent lentement. Au vote, une respiration plus forte.', '09', 25],
     ['Silhouette', 'En anonyme, un grand fantôme très pâle flotte derrière les boutons. Au vote, il se rapproche de ton choix.', '10', 26],
+    ['Confirmation', 'Aucun effet sur la carte : au vote, une barre sombre monte en bas, « Vote anonyme enregistré », avec Annuler. Elle disparaît au bout de trois secondes.', '11', 31],
+    ['Sélecteur Public / Anonyme', 'Un sélecteur à deux positions au-dessus des boutons, comme dans les réglages iOS. Le fantôme est dans la position Anonyme.', '12', 32],
+    ['Info-bulle', 'Quand tu actives le fantôme, une bulle explique en une phrase : « Giulia ne verra pas ton nom ». Elle s\'efface seule.', '13', 33],
+    ['Bouton scindé', 'Au vote, ton bouton se sépare en deux : ta réponse à gauche, un compartiment fantôme à droite, séparé par un fin trait.', '14', 34],
+    ['Voter en tant que', 'Une étiquette montre sous quel nom tu votes : « Adam » avec ton avatar, ou « Anonyme » avec le fantôme. Comme choisir son compte.', '15', 35],
   ]
 
 
@@ -248,18 +291,21 @@
             <div class="pcts"><span class="n">33 %</span><span class="y">67 %</span></div>
             <div class="bar"><i style="width:33%;background:var(--no)"></i><i style="width:67%;background:var(--yes)"></i></div>
           </div>
+          ${n === 32 ? `<button class="ghostbtn seg" type="button" aria-pressed="false" aria-label="Voter en anonyme"><span>Public</span><span>${ghost()}Anonyme</span></button>` : ''}
           <div class="btns">
-            <button class="btn no" data-side="no" data-label="Non" type="button" aria-pressed="false">${n === 3 ? `<span class="mini">${ghost()}</span>` : ''}Non${n === 6 ? '<span class="sparks"></span>' : ''}</button>
-            <button class="btn yes" data-side="yes" data-label="Oui" type="button" aria-pressed="false">${n === 3 ? `<span class="mini">${ghost()}</span>` : ''}Oui${n === 6 ? '<span class="sparks"></span>' : ''}</button>
+            <button class="btn no" data-side="no" data-label="Non" type="button" aria-pressed="false">${n === 34 ? `<span class="split">${ghost()}</span>` : ''}${n === 3 ? `<span class="mini">${ghost()}</span>` : ''}Non${n === 6 ? '<span class="sparks"></span>' : ''}</button>
+            <button class="btn yes" data-side="yes" data-label="Oui" type="button" aria-pressed="false">${n === 34 ? `<span class="split">${ghost()}</span>` : ''}${n === 3 ? `<span class="mini">${ghost()}</span>` : ''}Oui${n === 6 ? '<span class="sparks"></span>' : ''}</button>
             ${n === 10 ? `<span class="peek" aria-hidden="true">${ghost()}</span>` : ''}
           </div>
           <div class="acts">
             <svg class="i"><use href="#c"/></svg>3 <svg class="i"><use href="#r"/></svg>0
-            <button class="ghostbtn" type="button" aria-pressed="false" aria-label="Voter en anonyme">${ghost()}</button>
+            ${n === 32 ? '' : n === 35 ? `<button class="ghostbtn chip" type="button" aria-pressed="false" aria-label="Voter en anonyme"><span class="as-me"><span class="me">A</span>Adam</span><span class="as-anon"><span class="gh">${ghost()}</span>Anonyme</span></button>` : `<button class="ghostbtn" type="button" aria-pressed="false" aria-label="Voter en anonyme">${ghost()}</button>`}
+            ${n === 33 ? '<span class="tip">Giulia ne verra pas ton nom</span>' : ''}
             ${n === 8 ? '<span class="ghostlabel">Fantôme</span>' : ''}
             <span class="cnt">${n === 7 ? `<span class="plus">+1 ${ghost()}</span>` : ''}<span><span class="num">108</span> votes</span>${n === 7 ? `<span class="gbadge">${ghost()}</span>` : ''}</span>
           </div>
         </div>
+        ${n === 31 ? `<div class="toast">${ghost()}Vote anonyme enregistré<button class="undo" type="button">Annuler</button></div>` : ''}
       </div>
       <button class="replay" type="button">Rejouer</button>
     </section>`
@@ -270,6 +316,7 @@
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   function reset(c) {
+    c.querySelectorAll('.toast, .tip').forEach((el) => el.classList.remove('show'))
     c.style.removeProperty('--sx')
     const big = c.querySelector('.big'); if (big) big.style.left = ''
     c.classList.remove('anon', 'voted')
@@ -316,11 +363,25 @@
     if (replay) { reset(replay.previousElementSibling); return }
     const c = event.target.closest('.card')
     if (!c) return
+    if (event.target.closest('.undo')) {
+      c.querySelector('.toast').classList.remove('show')
+      c.querySelectorAll('.btn').forEach((b) => { b.classList.remove('on'); b.setAttribute('aria-pressed', 'false') })
+      c.classList.remove('voted')
+      c.querySelector('.num').textContent = '108'
+      return
+    }
     const ghostBtn = event.target.closest('.ghostbtn')
     if (ghostBtn) {
       const on = !c.classList.contains('anon')
       c.classList.toggle('anon', on)
       ghostBtn.setAttribute('aria-pressed', String(on))
+      const tip = c.querySelector('.tip')
+      if (tip) {
+        tip.style.left = ghostBtn.offsetLeft + ghostBtn.offsetWidth / 2 + 'px'
+        tip.classList.toggle('show', on)
+        clearTimeout(tip.timer)
+        if (on) tip.timer = setTimeout(() => tip.classList.remove('show'), 2600)
+      }
       return
     }
     const btn = event.target.closest('.btn')
@@ -334,6 +395,12 @@
     if (!c.classList.contains('anon')) return
     const n = Number(c.dataset.n)
     if (n === 3) fly(c, btn)
+    if (n === 31) {
+      const toast = c.querySelector('.toast')
+      toast.classList.add('show')
+      clearTimeout(toast.timer)
+      toast.timer = setTimeout(() => toast.classList.remove('show'), 3000)
+    }
     if (n === 21) c.style.setProperty('--sx', ((btn.offsetLeft + btn.offsetWidth / 2) / c.clientWidth * 100) + '%')
     if (n === 22 && !reduce) c.querySelector('.cross').animate([
       { transform: 'translate(-160px, 10px)', opacity: 0 },
