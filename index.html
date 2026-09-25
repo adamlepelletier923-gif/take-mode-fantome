@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mode fantôme animé</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+  :root {
+    --bg: #FFFFFF; --page: #F4F5F7; --ink: #111315; --muted: #6B6E73;
+    --chip: #F0F2F5; --border: #E3E6EA; --no: #C53637; --yes: #008B45; --onink: #FFFFFF;
+    --frame: #D9DCE1; --mist: rgba(214,218,224,.85); --silver: #7E858D; --silverHi: #FFFFFF; --night: #0E1013; --nightInk: #F2F3F5; --nightChip: #1C1F24;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #000000; --page: #0B0C0E; --ink: #F2F3F5; --muted: #83898F;
+      --chip: #16181C; --border: #2F3336; --no: #DC5551; --yes: #16A34A; --onink: #000000;
+      --frame: #25282C; --mist: rgba(120,126,134,.55); --silver: #8A9099; --silverHi: #E9ECEF; --night: #F4F5F7; --nightInk: #111315; --nightChip: #E3E6EA; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #000000; --page: #0B0C0E; --ink: #F2F3F5; --muted: #83898F;
+    --chip: #16181C; --border: #2F3336; --no: #DC5551; --yes: #16A34A; --onink: #000000;
+    --frame: #25282C; --mist: rgba(120,126,134,.55); --silver: #8A9099; --silverHi: #E9ECEF; --night: #F4F5F7; --nightInk: #111315; --nightChip: #E3E6EA; color-scheme: dark;
+  }
+  body { margin: 0; background: var(--page); color: var(--ink); font-family: Inter, -apple-system, "Helvetica Neue", Arial, sans-serif; padding-inline: 16px; padding-block: 28px 56px; }
+  .wrap { max-width: 1320px; margin: 0 auto; display: grid; gap: 26px; }
+  header h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.6px; margin: 0 0 6px; text-wrap: balance; }
+  header p { margin: 0; color: var(--muted); max-width: 66ch; line-height: 1.5; }
+  .how { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .how span { background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 22px; align-items: start; }
+  .opt { display: grid; gap: 10px; }
+  .tag { display: flex; align-items: baseline; gap: 10px; }
+  .tag b { font-size: 13px; letter-spacing: 1px; color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tag span { font-size: 17px; font-weight: 700; }
+  .why { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.45; min-height: 3.9em; }
+  .replay { justify-self: start; border: 1px solid var(--border); background: var(--bg); color: var(--ink); border-radius: 999px; padding: 6px 14px; font: 600 13px Inter, sans-serif; cursor: pointer; }
+  .replay:focus-visible, .ghostbtn:focus-visible, .btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  /* the card, at the app's measures */
+  .card { --cbg: var(--bg); --cink: var(--ink); --cchip: var(--chip); background: var(--cbg); color: var(--cink); border: 1px solid var(--frame); border-radius: 28px; overflow: hidden; max-width: 390px; width: 100%; position: relative; transition: background .45s ease, color .45s ease; isolation: isolate; }
+  .row { padding: 16px 18px 16px; display: grid; gap: 12px; position: relative; z-index: 1; }
+  .head { display: flex; align-items: center; gap: 8px; font-size: 15px; }
+  .face { width: 24px; height: 24px; border-radius: 50%; background: #E8D5C4; color: #6B4A2F; flex: none; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+  .name { font-weight: 700; transition: filter .4s, opacity .4s; }
+  .age { color: var(--muted); }
+  .q { font-size: 19px; font-weight: 600; line-height: 1.3; margin: 0; }
+  .result { display: grid; gap: 8px; max-height: 0; opacity: 0; overflow: hidden; transition: max-height .35s ease, opacity .35s ease; }
+  .voted .result { max-height: 60px; opacity: 1; }
+  .pcts { display: flex; justify-content: space-between; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+  .pcts .n { color: var(--no); } .pcts .y { color: var(--yes); }
+  .bar { height: 6px; border-radius: 3px; display: flex; overflow: hidden; background: var(--cchip); }
+  .bar i { display: block; height: 100%; }
+  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; position: relative; }
+  .btn { position: relative; height: 38px; border-radius: 19px; border: 1.5px solid; background: transparent; display: flex; align-items: center; justify-content: center; gap: 6px; font: 600 16px Inter, sans-serif; cursor: pointer; overflow: hidden; transition: background .3s, color .3s, opacity .4s, filter .4s, border-color .3s; }
+  .btn.no { --side: var(--no); }
+  .btn.yes { --side: var(--yes); }
+  .btn { border-color: var(--side); color: var(--side); }
+  .btn.on { background: var(--side); color: #fff; }
+  .acts { display: flex; align-items: center; gap: 18px; color: var(--muted); font-size: 14px; }
+  .acts .cnt { margin-left: auto; font-variant-numeric: tabular-nums; position: relative; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; }
+  .ghostbtn { border: 0; background: transparent; padding: 4px; margin: -4px; cursor: pointer; color: var(--muted); display: grid; place-items: center; border-radius: 50%; transition: color .3s, background .3s, transform .3s; }
+  .ghostbtn svg { width: 20px; height: 20px; }
+  .anon .ghostbtn { color: var(--cink); }
+  .gh { fill: currentColor; }
+  svg.i { width: 18px; height: 18px; }
+
+  /* 1 — Brume */
+  .d1 .btns { isolation: isolate; }
+  .fog { position: absolute; inset: -18px -18px -10px; z-index: 2; pointer-events: none; opacity: 0; transform: translateY(14px); transition: opacity .7s ease, transform .9s ease; }
+  .fog i { position: absolute; border-radius: 50%; background: var(--mist); filter: blur(12px); animation: mist 7s ease-in-out infinite alternate; }
+  .fog i:nth-child(1) { width: 55%; height: 60%; left: -5%; top: 20%; }
+  .fog i:nth-child(2) { width: 50%; height: 70%; left: 30%; top: 5%; animation-duration: 9s; animation-direction: alternate-reverse; }
+  .fog i:nth-child(3) { width: 55%; height: 60%; right: -8%; top: 25%; animation-duration: 8s; }
+  .fog i:nth-child(4) { width: 35%; height: 45%; left: 15%; top: 45%; animation-duration: 6s; animation-direction: alternate-reverse; }
+  .d1.anon .fog { opacity: 1; transform: none; }
+  .d1.anon.voted .fog { opacity: .75; }
+  .d1.anon.voted .btn.on { z-index: 3; box-shadow: 0 0 22px 6px color-mix(in srgb, var(--side) 40%, transparent); animation: emerge .8s ease-out; }
+  @keyframes mist { from { transform: translateX(-14px) scale(1); } to { transform: translateX(16px) scale(1.12); } }
+  @keyframes emerge { from { filter: blur(6px); opacity: .3; } to { filter: none; opacity: 1; } }
+
+  /* 2 — La carte passe de nuit */
+  .d2.anon { --cbg: var(--night); --cink: var(--nightInk); --cchip: var(--nightChip); }
+  .d2 .moon { position: absolute; top: 14px; right: 16px; width: 18px; height: 18px; border-radius: 50%; box-shadow: -5px 3px 0 0 var(--nightInk); transform: translateY(-40px); transition: transform .5s cubic-bezier(.2,.9,.3,1.3); z-index: 3; }
+  .d2.anon .moon { transform: translateY(0); }
+  .d2.anon .head .dots { visibility: hidden; }
+
+  /* 3 — Le fantôme s'envole dans le bouton */
+  .flyer { position: absolute; width: 22px; height: 22px; z-index: 5; pointer-events: none; color: var(--cink); }
+  .d3.anon.voted .btn.on { box-shadow: 0 0 0 3px var(--cbg), 0 0 0 5px var(--side); }
+  .d3 .btn .mini { width: 0; transition: width .3s; overflow: hidden; display: inline-flex; }
+  .d3.anon.voted .btn.on .mini { width: 16px; }
+  .d3 .btn .mini svg { width: 16px; height: 16px; }
+
+  /* 4 — Aura */
+  .d4 { border: 3px solid transparent; background: linear-gradient(var(--cbg), var(--cbg)) padding-box, linear-gradient(var(--frame), var(--frame)) border-box; transition: box-shadow .5s; }
+  .d4.anon { background: linear-gradient(var(--cbg), var(--cbg)) padding-box, conic-gradient(from var(--a), var(--silver), var(--silverHi), var(--silver), #5F646A, var(--silver), var(--silverHi), var(--silver)) border-box; animation: spin 3s linear infinite; box-shadow: 0 0 22px 3px color-mix(in srgb, var(--silver) 55%, transparent); }
+  .d4.anon.voted .btn.on { animation: ring .7s ease-out; }
+  @property --a { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+  @keyframes spin { to { --a: 360deg; } }
+  @keyframes ring { 0% { box-shadow: 0 0 0 0 rgba(107,110,115,.55); } 100% { box-shadow: 0 0 0 14px rgba(107,110,115,0); } }
+
+  /* 5 — Pixels */
+    .d5.anon.voted .btn.on { animation: pixelate .6s steps(5) both; background: repeating-conic-gradient(var(--side) 0 25%, color-mix(in srgb, var(--side) 72%, #fff) 0 50%) 0 0 / 8px 8px; }
+  @keyframes pixelate { from { background-size: 1px 1px; } to { background-size: 8px 8px; } }
+
+  /* 6 — Encre invisible */
+  .d6.anon.voted .btn.on { background: color-mix(in srgb, var(--side) 16%, var(--cbg)); color: transparent; }
+  .d6 .sparks { position: absolute; inset: 0; pointer-events: none; opacity: 0; background-image: radial-gradient(circle, var(--side) 1px, transparent 1.6px); background-size: 7px 7px; transition: opacity .4s; }
+  .d6.anon.voted .btn.on .sparks { opacity: 1; animation: shimmer 1.4s linear infinite; }
+  @keyframes shimmer { 0% { background-position: 0 0; opacity: .5; } 50% { opacity: 1; } 100% { background-position: 14px -7px; opacity: .5; } }
+
+  /* 7 — +1 fantôme sur le compteur */
+  .plus { position: absolute; right: 100%; bottom: 0; margin-right: 8px; white-space: nowrap; font-weight: 700; font-size: 13px; color: var(--cink); display: inline-flex; align-items: center; gap: 3px; opacity: 0; pointer-events: none; }
+  .plus svg { width: 13px; height: 13px; }
+  .d7.anon.voted .plus { animation: floatup 1.4s ease-out forwards; }
+  .gbadge { display: inline-flex; width: 0; opacity: 0; overflow: hidden; color: var(--cink); transition: width .3s .9s, opacity .3s .9s; }
+  .gbadge svg { width: 15px; height: 15px; flex: none; }
+  .d7.anon.voted .gbadge { width: 15px; opacity: 1; }
+  @keyframes floatup { 0% { opacity: 0; transform: translateY(6px); } 25% { opacity: 1; } 100% { opacity: 0; transform: translateY(-26px); } }
+
+  /* 8 — Filigrane de fantômes */
+  .d8 .wm { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity .6s; background-image: var(--ghostsvg); background-size: 26px 26px; }
+  .d8.anon .wm { opacity: .12; animation: slide 12s linear infinite; }
+  .d8.anon .ghostlabel { max-width: 120px; opacity: 1; margin-left: 4px; }
+  .d8 .ghostlabel { max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap; font-size: 13px; font-weight: 700; color: var(--cink); transition: max-width .4s, opacity .4s, margin .4s; }
+  @keyframes slide { to { background-position: 26px 26px; } }
+
+  /* 9 — Double qui s'efface */
+  .echo { position: absolute; inset: 0; border-radius: 19px; background: var(--side); pointer-events: none; }
+  .d9.anon.voted .btn.on { background: color-mix(in srgb, var(--side) 22%, var(--cbg)); color: var(--side); }
+
+  /* 10 — Fantôme caché */
+  .d10 .btn { z-index: 1; }
+  .peek { position: absolute; top: 0; width: 16px; height: 16px; color: var(--muted); z-index: 0; pointer-events: none; transform: translateY(4px); opacity: 0; transition: transform .45s cubic-bezier(.3,1.6,.5,1), opacity .2s; }
+  .peek svg { width: 16px; height: 16px; display: block; }
+  .d10.anon.voted .peek { opacity: 1; transform: translateY(-11px); transition-delay: .25s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  }
+  footer { color: var(--muted); font-size: 13px; line-height: 1.5; max-width: 70ch; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="g" viewBox="0 0 24 24"><path class="gh" d="M12 2.5c-4.4 0-7.5 3.3-7.5 7.6v10.6c0 .6.7.9 1.1.5l1.6-1.4 1.7 1.5c.3.3.8.3 1.1 0L12 19.8l2 1.5c.3.3.8.3 1.1 0l1.7-1.5 1.6 1.4c.4.4 1.1.1 1.1-.5V10.1c0-4.3-3.1-7.6-7.5-7.6Zm-3 9.2a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm6 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Z"/></symbol>
+    <symbol id="c" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M4 5.5h16v10.5H9.5L5 19.5V16H4z"/></symbol>
+    <symbol id="r" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4 9.5h13l-3-3M20 14.5H7l3 3"/></symbol>
+    <filter id="pix" x="0" y="0" width="100%" height="100%"><feFlood x="2" y="2" height="1" width="1"/><feComposite width="4" height="4"/><feTile result="a"/><feComposite in="SourceGraphic" in2="a" operator="in"/><feMorphology operator="dilate" radius="2"/></filter>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <h1>Mode fantôme, en mouvement</h1>
+    <p>Le take est celui de Giulia : tu votes dessus. Dix façons de faire réagir la carte quand tu passes en anonyme avant de voter, sans jamais toucher à l'auteur. Aucune ne reprend les sept de la première page. Chaque carte est à l'échelle de l'app (390 pt), avec ses vraies couleurs.</p>
+    <div class="how"><span>1. Appuie sur le fantôme</span><span>2. Vote Non ou Oui</span><span>3. « Rejouer » pour recommencer</span></div>
+  </header>
+  <div class="grid" id="grid"></div>
+  <footer>Sans le fantôme, chaque carte vote normalement : c'est la comparaison entre les deux qui compte. Dis-moi les numéros qui te plaisent, je peux en combiner deux.</footer>
+</div>
+
+<script>
+  const ghost = (cls = '') => `<svg class="${cls}" viewBox="0 0 24 24"><use href="#g"/></svg>`
+  const ghostSvg = encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#8A8F96" d="M12 2.5c-4.4 0-7.5 3.3-7.5 7.6v10.6c0 .6.7.9 1.1.5l1.6-1.4 1.7 1.5c.3.3.8.3 1.1 0L12 19.8l2 1.5c.3.3.8.3 1.1 0l1.7-1.5 1.6 1.4c.4.4 1.1.1 1.1-.5V10.1c0-4.3-3.1-7.6-7.5-7.6Z"/></svg>')
+  document.documentElement.style.setProperty('--ghostsvg', `url("data:image/svg+xml,${ghostSvg}")`)
+
+  const directions = [
+    ['Brume', 'Une brume monte sous les boutons et dérive lentement. Au vote, ton bouton en sort net et lumineux, la brume reste autour.'],
+    ['La carte passe de nuit', 'En anonyme, la carte entière bascule en version nuit, une lune descend dans le coin. Le vote se fait normalement.'],
+    ['Le fantôme s\'envole', 'Au vote, le fantôme quitte l\'interrupteur, vole jusqu\'à ton bouton et s\'y pose. Le bouton garde un double contour.'],
+    ['Aura', 'Un contour argenté brillant tourne autour de la carte tant que tu es en anonyme. Ton vote envoie une onde.'],
+    ['Pixels', 'Ton bouton se remplit en mosaïque, comme un visage flouté à la télé : ton vote compte, mais sans ton visage.'],
+    ['Encre invisible', 'Ton choix s\'efface sous des points scintillants, comme un message à encre invisible. On devine la couleur, pas plus.'],
+    ['Compteur fantôme', 'Rien ne change dans les boutons. Un « +1 » fantôme monte à côté du compteur, puis un petit fantôme y reste accroché.'],
+    ['Filigrane', 'Des petits fantômes défilent en filigrane dans le fond de la carte, et « Fantôme » s\'écrit à côté de l\'interrupteur.'],
+    ['Double qui s\'efface', 'Au vote, un double plein de ton bouton monte et disparaît. Ton bouton reste en verre dépoli, à moitié transparent.'],
+    ['Fantôme caché', 'Presque rien : au vote, un petit fantôme gris sort la tête de derrière ton bouton, pile au milieu, et y reste. Ton vote garde sa couleur normale.'],
+  ]
+
+  const card = (i, [title, why]) => {
+    const n = i + 1
+        return `
+    <section class="opt">
+      <div class="tag"><b>${String(n).padStart(2, '0')}</b><span>${title}</span></div>
+      <p class="why">${why}</p>
+      <div class="card d${n}" data-n="${n}">
+                ${n === 2 ? '<div class="moon"></div>' : ''}
+                ${n === 8 ? '<div class="wm"></div>' : ''}
+        <div class="row">
+          <div class="head">
+            <div class="face">G</div>
+            <span class="name">Giulia R.</span>
+            <span class="age">· il y a 11 h</span>
+            <span class="dots" style="margin-left:auto;color:var(--muted);font-weight:700;letter-spacing:1px">···</span>
+          </div>
+          <p class="q">Trop de touristes à Nairobi ?</p>
+          <div class="result">
+            <div class="pcts"><span class="n">33 %</span><span class="y">67 %</span></div>
+            <div class="bar"><i style="width:33%;background:var(--no)"></i><i style="width:67%;background:var(--yes)"></i></div>
+          </div>
+          <div class="btns">${n === 1 ? '<div class="fog"><i></i><i></i><i></i><i></i></div>' : ''}
+            <button class="btn no" data-side="no" data-label="Non" type="button" aria-pressed="false">${n === 3 ? `<span class="mini">${ghost()}</span>` : ''}Non${n === 6 ? '<span class="sparks"></span>' : ''}</button>
+            <button class="btn yes" data-side="yes" data-label="Oui" type="button" aria-pressed="false">${n === 3 ? `<span class="mini">${ghost()}</span>` : ''}Oui${n === 6 ? '<span class="sparks"></span>' : ''}</button>
+            ${n === 10 ? `<span class="peek" aria-hidden="true">${ghost()}</span>` : ''}
+          </div>
+          <div class="acts">
+            <svg class="i"><use href="#c"/></svg>3 <svg class="i"><use href="#r"/></svg>0
+            <button class="ghostbtn" type="button" aria-pressed="false" aria-label="Voter en anonyme">${ghost()}</button>
+            ${n === 8 ? '<span class="ghostlabel">Fantôme</span>' : ''}
+            <span class="cnt">${n === 7 ? `<span class="plus">+1 ${ghost()}</span>` : ''}<span><span class="num">108</span> votes</span>${n === 7 ? `<span class="gbadge">${ghost()}</span>` : ''}</span>
+          </div>
+        </div>
+      </div>
+      <button class="replay" type="button">Rejouer</button>
+    </section>`
+  }
+
+  const grid = document.getElementById('grid')
+  grid.innerHTML = directions.map((d, i) => card(i, d)).join('')
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  function reset(c) {
+    c.classList.remove('anon', 'voted')
+    c.querySelectorAll('.btn').forEach((b) => { b.classList.remove('on'); b.setAttribute('aria-pressed', 'false') })
+    c.querySelector('.ghostbtn').setAttribute('aria-pressed', 'false')
+    c.querySelector('.num').textContent = '108'
+  }
+
+  function fly(c, target) {
+    if (reduce) return
+    const from = c.querySelector('.ghostbtn').getBoundingClientRect()
+    const to = target.getBoundingClientRect()
+    const box = c.getBoundingClientRect()
+    const el = document.createElement('div')
+    el.className = 'flyer'
+    el.innerHTML = ghost()
+    c.appendChild(el)
+    const x0 = from.left - box.left, y0 = from.top - box.top
+    const x1 = to.left - box.left + to.width / 2 - 11, y1 = to.top - box.top + 8
+    el.animate([
+      { transform: `translate(${x0}px, ${y0}px) scale(1)`, opacity: 1 },
+      { transform: `translate(${(x0 + x1) / 2}px, ${Math.min(y0, y1) - 40}px) scale(1.4)`, opacity: 1, offset: 0.5 },
+      { transform: `translate(${x1}px, ${y1}px) scale(.7)`, opacity: 0 },
+    ], { duration: 700, easing: 'cubic-bezier(.3,.7,.3,1)' }).onfinish = () => el.remove()
+  }
+
+  function echo(target) {
+    if (reduce) return
+    const e = document.createElement('span')
+    e.className = 'echo'
+    target.appendChild(e)
+    e.animate([
+      { transform: 'translateY(0) scale(1)', opacity: .9 },
+      { transform: 'translateY(-26px) scale(1.06)', opacity: 0 },
+    ], { duration: 700, easing: 'ease-out' }).onfinish = () => e.remove()
+  }
+
+  function peek(c, btn) {
+    c.querySelector('.peek').style.left = btn.offsetLeft + btn.offsetWidth / 2 - 8 + 'px'
+  }
+
+  grid.addEventListener('click', (event) => {
+    const replay = event.target.closest('.replay')
+    if (replay) { reset(replay.previousElementSibling); return }
+    const c = event.target.closest('.card')
+    if (!c) return
+    const ghostBtn = event.target.closest('.ghostbtn')
+    if (ghostBtn) {
+      const on = !c.classList.contains('anon')
+      c.classList.toggle('anon', on)
+      ghostBtn.setAttribute('aria-pressed', String(on))
+      return
+    }
+    const btn = event.target.closest('.btn')
+    if (!btn) return
+    const already = btn.classList.contains('on')
+    c.querySelectorAll('.btn').forEach((b) => { b.classList.remove('on'); b.setAttribute('aria-pressed', 'false') })
+    if (already) { c.classList.remove('voted'); c.querySelector('.num').textContent = '108'; return }
+    btn.classList.add('on'); btn.setAttribute('aria-pressed', 'true')
+    c.classList.remove('voted'); void c.offsetWidth; c.classList.add('voted')
+    c.querySelector('.num').textContent = '109'
+    if (!c.classList.contains('anon')) return
+    const n = Number(c.dataset.n)
+    if (n === 3) fly(c, btn)
+    if (n === 9) echo(btn)
+    if (n === 10) peek(c, btn)
+  })
+</script>
+</body>
+</html>
