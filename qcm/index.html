@@ -45,13 +45,15 @@ body {
 }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-.wrap { max-width: 1260px; margin: 0 auto; padding: 28px 16px 64px; }
+.wrap { max-width: 836px; margin: 0 auto; padding: 28px 16px 64px; }
 header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; margin-bottom: 22px; }
 header.top h1 { font-size: 26px; line-height: 1.15; letter-spacing: -0.6px; margin: 0 0 6px; text-wrap: balance; }
 header.top p { margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.5; max-width: 60ch; }
 .reset { background: var(--chip); border-radius: 999px; padding: 9px 16px; font-weight: 600; font-size: 13.5px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 390px), 1fr)); gap: 18px; align-items: start; }
-.slot { display: flex; flex-direction: column; gap: 8px; max-width: 390px; width: 100%; justify-self: center; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 12px; align-items: start; }
+.cell { min-width: 0; }
+.cell > .slot { width: 390px; max-width: none; transform-origin: top left; }
+.slot { display: flex; flex-direction: column; gap: 8px; }
 .tag { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; padding: 0 4px; }
 .tag span { white-space: nowrap; }
 .tag b { font-size: 12px; font-weight: 700; letter-spacing: 0.8px; color: var(--ink-3); }
@@ -652,10 +654,19 @@ function body(take, i) {
   }
 }
 
+// Two per row at every width: each card keeps its 390 pt drawing and is scaled to its column.
+function fit() {
+  grid.querySelectorAll('.cell').forEach((cell) => {
+    const slot = cell.firstElementChild
+    const k = Math.min(1, cell.clientWidth / 390)
+    slot.style.zoom = k
+  })
+}
+addEventListener('resize', fit)
 function card(take, i) {
   const mine = state[i]
   const { total } = shares(take, mine)
-  return `<section class="slot">
+  return `<div class="cell"><section class="slot">
     <div class="tag"><b>${String(i + 1).padStart(2, '0')}</b><span>${take.label}</span><em>${take.note}</em></div>
     <article class="row${mine !== null ? ' voted' : ''}" id="t${i}">
       <div class="by"><span class="face" style="background:${take.face}">${take.author[0]}</span><span class="name">${take.author}</span><span class="when">· ${take.when}</span><span class="dots">···</span></div>
@@ -663,13 +674,14 @@ function card(take, i) {
       ${body(take, i)}
       <div class="foot">${ICON.chat}${ICON.repost}${ICON.send}${ICON.ghost}<span class="count">${fmt(total)} votes</span></div>
     </article>
-  </section>`
+  </section></div>`
 }
 
 const grid = document.getElementById('grid')
 function render(i) {
   if (i === undefined) grid.innerHTML = TAKES.map(card).join('')
-  else document.getElementById('t' + i).parentElement.outerHTML = card(TAKES[i], i)
+  else document.getElementById('t' + i).closest('.cell').outerHTML = card(TAKES[i], i)
+  fit()
 }
 function apply(root) {
   requestAnimationFrame(() => requestAnimationFrame(() => {
