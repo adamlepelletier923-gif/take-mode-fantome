@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vote anonyme sobre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+  :root {
+    --bg: #FFFFFF; --page: #F4F5F7; --ink: #111315; --muted: #6B6E73;
+    --chip: #F0F2F5; --border: #E3E6EA; --no: #C53637; --yes: #008B45; --frame: #D9DCE1;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #000000; --page: #0B0C0E; --ink: #F2F3F5; --muted: #83898F;
+      --chip: #16181C; --border: #2F3336; --no: #DC5551; --yes: #16A34A; --frame: #25282C; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #000000; --page: #0B0C0E; --ink: #F2F3F5; --muted: #83898F;
+    --chip: #16181C; --border: #2F3336; --no: #DC5551; --yes: #16A34A; --frame: #25282C; color-scheme: dark;
+  }
+  body { margin: 0; background: var(--page); color: var(--ink); font-family: Inter, -apple-system, "Helvetica Neue", Arial, sans-serif; padding-inline: 16px; padding-block: 28px 56px; }
+  .wrap { max-width: 1320px; margin: 0 auto; display: grid; gap: 26px; }
+  header h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.6px; margin: 0 0 6px; text-wrap: balance; }
+  header p { margin: 0; color: var(--muted); max-width: 66ch; line-height: 1.5; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 22px; align-items: start; }
+  .opt { display: grid; gap: 10px; }
+  .tag { display: flex; align-items: baseline; gap: 10px; }
+  .tag b { font-size: 13px; letter-spacing: 1px; color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tag span { font-size: 17px; font-weight: 700; }
+  .why { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.45; min-height: 3.9em; }
+  .replay { justify-self: start; border: 1px solid var(--border); background: var(--bg); color: var(--ink); border-radius: 999px; padding: 6px 14px; font: 600 13px Inter, sans-serif; cursor: pointer; }
+  button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .card { background: var(--bg); color: var(--ink); border: 1px solid var(--frame); border-radius: 28px; overflow: hidden; max-width: 390px; width: 100%; position: relative; }
+  .row { padding: 16px 18px; display: grid; gap: 12px; position: relative; }
+  .head { display: flex; align-items: center; gap: 8px; font-size: 15px; }
+  .face { width: 24px; height: 24px; border-radius: 50%; background: #E8D5C4; color: #6B4A2F; display: grid; place-items: center; font-size: 12px; font-weight: 700; flex: none; }
+  .name { font-weight: 700; white-space: nowrap; }
+  .age { color: var(--muted); white-space: nowrap; }
+  .dots { margin-left: auto; color: var(--muted); font-weight: 700; letter-spacing: 1px; }
+  .q { font-size: 19px; font-weight: 600; line-height: 1.3; margin: 0; }
+  .result { display: grid; gap: 8px; max-height: 0; opacity: 0; overflow: hidden; transition: max-height .35s ease, opacity .35s ease; }
+  .voted .result { max-height: 60px; opacity: 1; }
+  .pcts { display: flex; justify-content: space-between; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+  .pcts .n { color: var(--no); } .pcts .y { color: var(--yes); }
+  .bar { height: 6px; border-radius: 3px; display: flex; overflow: hidden; background: var(--chip); }
+  .bar i { display: block; height: 100%; }
+  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; position: relative; }
+  .btn { --side: var(--no); position: relative; height: 38px; border-radius: 19px; border: 1.5px solid var(--side); color: var(--side); background: transparent; display: flex; align-items: center; justify-content: center; gap: 6px; font: 600 16px Inter, sans-serif; cursor: pointer; overflow: hidden; transition: background .25s, color .25s, box-shadow .25s; }
+  .btn.yes { --side: var(--yes); }
+  .btn.on { background: var(--side); color: #fff; }
+  .acts { display: flex; align-items: center; gap: 18px; color: var(--muted); font-size: 14px; }
+  .cnt { margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  svg.i { width: 18px; height: 18px; }
+  .tg { border: 0; background: transparent; color: var(--muted); padding: 4px; margin: -4px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font: 500 13px Inter, sans-serif; transition: color .25s; }
+  .tg svg { width: 20px; height: 20px; overflow: visible; }
+  .anon .tg { color: var(--ink); }
+  .ln { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .slash { stroke-dasharray: 24; stroke-dashoffset: 24; transition: stroke-dashoffset .35s ease; }
+  .anon .slash { stroke-dashoffset: 0; }
+  .shackle { transform: translateY(-3px); transition: transform .3s cubic-bezier(.3,1.4,.5,1); }
+  .anon .shackle { transform: none; }
+  .mini { display: inline-flex; width: 0; opacity: 0; overflow: hidden; transition: width .3s, opacity .3s; }
+  .mini svg { width: 15px; height: 15px; flex: none; }
+
+  /* 1 — Interrupteur */
+  .switch { color: var(--muted); }
+  .track { width: 32px; height: 19px; border-radius: 10px; background: var(--border); position: relative; transition: background .25s; flex: none; }
+  .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform .25s cubic-bezier(.3,1.3,.5,1); }
+  .d1.anon .track { background: var(--ink); }
+  .d1.anon .track::after { transform: translateX(13px); background: var(--bg); }
+  .cap { font-size: 13px; color: var(--muted); max-height: 0; opacity: 0; overflow: hidden; margin-top: -12px; transition: max-height .3s, opacity .3s, margin .3s; }
+  .d1.anon.voted .cap { max-height: 40px; opacity: 1; margin-top: 0; }
+
+  /* 2 — Œil barré */
+  .d2.anon.voted .btn.on .mini { width: 15px; opacity: 1; }
+
+  /* 3 — Rail */
+  .d3::before { content: ""; position: absolute; left: 0; top: 18px; bottom: 18px; width: 3px; border-radius: 0 3px 3px 0; background: var(--ink); transform: scaleY(0); transition: transform .35s ease, background .3s; z-index: 1; }
+  .d3.anon::before { transform: scaleY(1); }
+  .d3.anon.voted:has(.btn.no.on)::before { background: var(--no); }
+  .d3.anon.voted:has(.btn.yes.on)::before { background: var(--yes); }
+
+  /* 4 — Double filet */
+  .d4.anon.voted .btn.on { background: transparent; color: var(--side); font-weight: 700; box-shadow: inset 0 0 0 3px var(--bg), inset 0 0 0 4.5px var(--side); }
+
+  /* 5 — Caviardage */
+  .redact { font-size: 13px; color: var(--muted); display: flex; gap: 6px; align-items: center; max-height: 0; opacity: 0; overflow: hidden; margin-top: -12px; transition: max-height .3s, opacity .3s, margin .3s; }
+  .d5.anon.voted .redact { max-height: 40px; opacity: 1; margin-top: 0; }
+  .rv { position: relative; font-weight: 700; color: var(--ink); padding: 0 2px; }
+  .rv::after { content: ""; position: absolute; inset: 1px -2px; background: var(--ink); border-radius: 2px; transform: scaleX(0); transform-origin: left; transition: transform .45s cubic-bezier(.6,0,.3,1) .35s; }
+  .d5.anon.voted .rv::after { transform: scaleX(1); }
+
+  /* 6 — Cadenas */
+  .d6.anon.voted .btn.on .mini { width: 15px; opacity: 1; }
+
+  /* 7 — Urne */
+  .slot { position: absolute; bottom: -9px; width: 44px; height: 2px; border-radius: 1px; background: var(--muted); opacity: 0; transition: opacity .2s; }
+  .ballot { position: absolute; width: 12px; height: 15px; border-radius: 2px; background: var(--side); pointer-events: none; z-index: 2; }
+
+  /* 8 — Isoloir */
+  .d8 .btns { overflow: hidden; padding: 4px; margin: -4px; border-radius: 23px; }
+  .cur { position: absolute; top: 0; bottom: 0; width: 50%; background: var(--chip); z-index: 3; pointer-events: none; transform: translateX(-101%); }
+  .cur.r { right: 0; transform: translateX(101%); }
+  .cur.l { left: 0; border-right: 1px solid var(--border); }
+
+  /* 9 — Mention */
+  .lab::after { content: ""; font-weight: 500; font-size: 14px; opacity: .85; }
+  .d9.anon.voted .btn.on .lab::after { content: " · anonyme"; }
+  .d9.anon.voted .btn.on .lab { animation: fadein .35s ease; }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+  /* 10 — Compteur roulant */
+  .pct { display: inline-flex; align-items: center; } .pct .num { margin-right: 4px; }
+  .num { display: inline-block; height: 1.2em; line-height: 1.2em; overflow: hidden; vertical-align: bottom; }
+  .num span { display: block; }
+  .plock { display: inline-flex; width: 0; opacity: 0; overflow: hidden; transition: width .3s .5s, opacity .3s .5s; }
+  .plock svg { width: 13px; height: 13px; flex: none; }
+  .d10.anon.voted .plock.show { width: 17px; opacity: 1; }
+
+  /* A — Ta réponse en noir */
+  .d11.anon.voted .btn.on { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .d11.anon.voted .btn.on .mini { width: 15px; opacity: 1; }
+  .d11 .bar i { transition: background .35s .15s; }
+  .d11.anon.voted:has(.btn.no.on) .bar i:first-child, .d11.anon.voted:has(.btn.yes.on) .bar i:last-child { background: var(--ink) !important; }
+  .d11.anon.voted:has(.btn.no.on) .pcts .n, .d11.anon.voted:has(.btn.yes.on) .pcts .y { color: var(--ink); }
+
+  /* G — Pastille */
+  .pill { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px 3px 7px; border-radius: 999px; background: var(--ink); color: var(--bg); font-size: 12px; font-weight: 700; white-space: nowrap; opacity: 0; transform: translateX(8px); transition: opacity .3s, transform .3s; }
+  .pill svg { width: 12px; height: 12px; }
+  .d12 .dots { margin-left: 8px; }
+  .d12.anon .pill { opacity: 1; transform: none; }
+  .d12.anon.voted .pill { animation: settle .4s ease; }
+  @keyframes settle { 50% { transform: scale(1.08); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+  footer { color: var(--muted); font-size: 13px; line-height: 1.5; max-width: 70ch; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="c" viewBox="0 0 24 24"><path class="ln" d="M4 5.5h16v10.5H9.5L5 19.5V16H4z"/></symbol>
+    <symbol id="r" viewBox="0 0 24 24"><path class="ln" d="M4 9.5h13l-3-3M20 14.5H7l3 3"/></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <h1>Vote anonyme, version sobre</h1>
+    <p>Voter en anonyme sur le take de quelqu'un, sans fantôme ni effet mignon : des gestes d'interface discrets, comme dans une app bancaire ou un réglage iOS. A et G reprennent les deux principes retenus de la première maquette, animés ; 01 à 10 sont dix nouvelles pistes. Sur chaque carte, active l'anonymat avec l'œil, le cadenas ou l'interrupteur, puis vote Non ou Oui.</p>
+  </header>
+  <div class="grid" id="grid"></div>
+  <footer>Sans le mode privé, chaque carte vote normalement. Dis-moi les numéros qui te plaisent, je peux en combiner deux.</footer>
+</div>
+
+<script>
+  const eye = '<svg viewBox="0 0 24 24"><path class="ln" d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12Z"/><circle class="ln" cx="12" cy="12" r="2.8"/><path class="ln slash" d="M4 4l16 16"/></svg>'
+  const eyeOff = '<svg viewBox="0 0 24 24"><path class="ln" d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12Z"/><circle class="ln" cx="12" cy="12" r="2.8"/><path class="ln" d="M4 4l16 16"/></svg>'
+  const lock = '<svg viewBox="0 0 24 24"><rect class="ln" x="5" y="11" width="14" height="9.5" rx="2"/><path class="ln shackle" d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg>'
+  const lockClosed = '<svg viewBox="0 0 24 24"><rect class="ln" x="5" y="11" width="14" height="9.5" rx="2"/><path class="ln" d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg>'
+
+  const directions = [
+    ['Ta réponse en noir', 'Le principe A de la première maquette, en animé : ton bouton passe au noir avec un cadenas, et ta part de la barre aussi.', 'A', 11],
+    ['Pastille « Anonyme »', 'Le principe G de la première maquette, en animé : une pastille noire « Anonyme » glisse en haut de la carte, et marque un léger battement quand tu votes.', 'G', 12],
+    ['Interrupteur', 'Un vrai interrupteur « Anonyme », comme dans les réglages iOS. Après le vote, une ligne grise confirme : Giulia voit le total, pas ton nom.'],
+    ['Œil barré', 'L\'œil se barre d\'un trait quand tu passes en privé. Ton bouton garde sa couleur, avec le même œil barré à côté du mot.'],
+    ['Rail', 'Un filet vertical apparaît sur le bord gauche de la carte en mode privé, puis prend la couleur de ton vote.'],
+    ['Double filet', 'Un vote privé ne se remplit pas : ton bouton garde un double contour à ta couleur. Plein = public, filet = privé.'],
+    ['Caviardage', 'Sous les boutons, « Ton vote : Oui », puis une barre noire vient le caviarder, comme un document classé.'],
+    ['Cadenas', 'Le cadenas se ferme quand tu passes en privé. Au vote, un petit cadenas fermé s\'installe dans ton bouton.'],
+    ['Urne', 'Au vote, un bulletin à ta couleur tombe de ton bouton dans une fente qui apparaît juste en dessous, puis disparaît.'],
+    ['Isoloir', 'Au vote, deux panneaux se referment sur les boutons un court instant, comme le rideau d\'un isoloir, puis se rouvrent.'],
+    ['Mention', 'Aucun effet : ton bouton dit simplement « Oui · anonyme ». Le plus direct, le plus lisible.'],
+    ['Compteur roulant', 'Ton vote fait rouler le pourcentage de ton camp d\'un point, comme un cours de bourse, avec un petit cadenas à côté.'],
+  ]
+
+  const toggle = (n) => {
+    if (n === 1) return '<button class="tg switch" type="button" aria-pressed="false" aria-label="Voter en anonyme"><span class="track"></span>Anonyme</button>'
+    if (n === 6) return `<button class="tg" type="button" aria-pressed="false" aria-label="Voter en anonyme">${lock}</button>`
+    return `<button class="tg" type="button" aria-pressed="false" aria-label="Voter en anonyme">${eye}</button>`
+  }
+  const mini = (n) => n === 2 ? `<span class="mini">${eyeOff}</span>` : n === 6 || n === 11 ? `<span class="mini">${lockClosed}</span>` : ''
+  const pct = (cls, v, n) => n === 10
+    ? `<span class="pct ${cls}"><span class="plock" data-side="${cls === 'n' ? 'no' : 'yes'}">${lockClosed}</span><span class="num"><span>${v}</span></span><span>%</span></span>`
+    : `<span class="${cls}">${v} %</span>`
+
+  const card = (i, [title, why, label, id]) => {
+    const n = id ?? i - 1
+    return `
+    <section class="opt">
+      <div class="tag"><b>${label ?? String(n).padStart(2, '0')}</b><span>${title}</span></div>
+      <p class="why">${why}</p>
+      <div class="card d${n}" data-n="${n}">
+        <div class="row">
+          <div class="head"><div class="face">G</div><span class="name">Giulia R.</span><span class="age">· il y a 11 h</span>${n === 12 ? `<span class="pill">${lockClosed}Anonyme</span>` : ''}<span class="dots">···</span></div>
+          <p class="q">Trop de touristes à Nairobi ?</p>
+          <div class="result">
+            <div class="pcts">${pct('n', 33, n)}${pct('y', 67, n)}</div>
+            <div class="bar"><i style="width:33%;background:var(--no)"></i><i style="width:67%;background:var(--yes)"></i></div>
+          </div>
+          <div class="btns">
+            ${n === 8 ? '<span class="cur l"></span><span class="cur r"></span>' : ''}
+            <button class="btn no" type="button" aria-pressed="false">${mini(n)}<span class="lab">Non</span></button>
+            <button class="btn yes" type="button" aria-pressed="false">${mini(n)}<span class="lab">Oui</span></button>
+            ${n === 7 ? '<span class="slot"></span>' : ''}
+          </div>
+          ${n === 1 ? '<div class="cap">Vote anonyme : Giulia voit le total, pas ton nom.</div>' : ''}
+          ${n === 5 ? '<div class="redact">Ton vote :<span class="rv"></span></div>' : ''}
+          <div class="acts">
+            <svg class="i"><use href="#c"/></svg>3 <svg class="i"><use href="#r"/></svg>0
+            ${toggle(n)}
+            <span class="cnt"><span class="votes">108</span> votes</span>
+          </div>
+        </div>
+      </div>
+      <button class="replay" type="button">Rejouer</button>
+    </section>`
+  }
+
+  const grid = document.getElementById('grid')
+  grid.innerHTML = directions.map((d, i) => card(i, d)).join('')
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const BASE = { no: 33, yes: 67 }
+
+  function setNum(c, side, value, animate) {
+    const box = c.querySelector(`.pct.${side === 'no' ? 'n' : 'y'} .num`)
+    if (!box) return
+    const old = box.firstElementChild
+    if (old.textContent === String(value)) return
+    if (!animate || reduce) { old.textContent = value; return }
+    const up = value > Number(old.textContent)
+    const next = document.createElement('span')
+    next.textContent = value
+    box.append(next)
+    const dist = up ? '-100%' : '100%'
+    if (!up) box.prepend(box.lastElementChild)
+    const els = [...box.children]
+    els.forEach((el) => el.animate([{ transform: `translateY(${up ? '0' : '-100%'})` }, { transform: `translateY(${up ? '-100%' : '0'})` }], { duration: 450, delay: 250, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }))
+    setTimeout(() => { box.replaceChildren(next); next.getAnimations().forEach((a) => a.cancel()) }, 760)
+  }
+
+  function reset(c) {
+    c.classList.remove('anon', 'voted')
+    c.querySelectorAll('.btn').forEach((b) => { b.classList.remove('on'); b.setAttribute('aria-pressed', 'false') })
+    c.querySelector('.tg').setAttribute('aria-pressed', 'false')
+    c.querySelector('.votes').textContent = '108'
+    setNum(c, 'no', BASE.no, false); setNum(c, 'yes', BASE.yes, false)
+    c.querySelectorAll('.plock').forEach((p) => p.classList.remove('show'))
+    const slot = c.querySelector('.slot'); if (slot) slot.style.opacity = 0
+  }
+
+  function urn(c, btn) {
+    const slot = c.querySelector('.slot')
+    const cx = btn.offsetLeft + btn.offsetWidth / 2
+    slot.style.left = cx - 22 + 'px'
+    slot.style.opacity = 1
+    if (reduce) return
+    const b = document.createElement('span')
+    b.className = 'ballot'
+    b.style.setProperty('--side', getComputedStyle(btn).getPropertyValue('--side'))
+    b.style.left = cx - 6 + 'px'
+    b.style.top = btn.offsetTop + 11 + 'px'
+    btn.parentElement.append(b)
+    b.animate([
+      { transform: 'translateY(0) scaleY(1)', opacity: 1 },
+      { transform: 'translateY(30px) scaleY(1)', opacity: 1, offset: .75 },
+      { transform: 'translateY(36px) scaleY(.1)', opacity: 0 },
+    ], { duration: 650, easing: 'cubic-bezier(.5,0,.8,.6)' }).onfinish = () => { b.remove(); slot.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, delay: 300, fill: 'forwards' }) }
+  }
+
+  function booth(c) {
+    if (reduce) return
+    const [l, r] = c.querySelectorAll('.cur')
+    const t = { duration: 950, easing: 'cubic-bezier(.4,0,.2,1)' }
+    l.animate([{ transform: 'translateX(-101%)' }, { transform: 'translateX(0)', offset: .35 }, { transform: 'translateX(0)', offset: .6 }, { transform: 'translateX(-101%)' }], t)
+    r.animate([{ transform: 'translateX(101%)' }, { transform: 'translateX(0)', offset: .35 }, { transform: 'translateX(0)', offset: .6 }, { transform: 'translateX(101%)' }], t)
+  }
+
+  grid.addEventListener('click', (event) => {
+    const replay = event.target.closest('.replay')
+    if (replay) { reset(replay.previousElementSibling); return }
+    const c = event.target.closest('.card')
+    if (!c) return
+    const tg = event.target.closest('.tg')
+    if (tg) {
+      const on = !c.classList.contains('anon')
+      c.classList.toggle('anon', on)
+      tg.setAttribute('aria-pressed', String(on))
+      return
+    }
+    const btn = event.target.closest('.btn')
+    if (!btn) return
+    const side = btn.classList.contains('yes') ? 'yes' : 'no'
+    const already = btn.classList.contains('on')
+    c.querySelectorAll('.btn').forEach((b) => { b.classList.remove('on'); b.setAttribute('aria-pressed', 'false') })
+    c.querySelectorAll('.plock').forEach((p) => p.classList.remove('show'))
+    setNum(c, 'no', BASE.no, false); setNum(c, 'yes', BASE.yes, false)
+    if (already) { c.classList.remove('voted'); c.querySelector('.votes').textContent = '108'; return }
+    btn.classList.add('on'); btn.setAttribute('aria-pressed', 'true')
+    c.classList.add('voted')
+    c.querySelector('.votes').textContent = '109'
+    const rv = c.querySelector('.rv'); if (rv) rv.textContent = side === 'yes' ? 'Oui' : 'Non'
+    if (!c.classList.contains('anon')) return
+    const n = Number(c.dataset.n)
+    if (n === 7) urn(c, btn)
+    if (n === 8) booth(c)
+    if (n === 10) {
+      setNum(c, side, BASE[side] + 1, true)
+      setNum(c, side === 'yes' ? 'no' : 'yes', BASE[side === 'yes' ? 'no' : 'yes'] - 1, true)
+      c.querySelector(`.plock[data-side="${side}"]`).classList.add('show')
+    }
+  })
+</script>
+</body>
+</html>
