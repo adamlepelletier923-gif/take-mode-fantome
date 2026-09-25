@@ -1,0 +1,173 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8">
+<title>Voter depuis les Tendances</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root {
+  --ground: #F6F7F9; --row: #FFFFFF; --ink: #111214; --ink-2: #5F6570; --ink-3: #9AA0AA;
+  --chip: #F0F2F5; --line: #E6E8EC; --no: #C53637; --yes: #008B45; --on-ink: #FFFFFF; --fill: rgba(17,18,20,.08);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --ground: #0B0B0C; --row: #000; --ink: #F2F3F5; --ink-2: #A3A8B2; --ink-3: #6C717B; --chip: #1C1D20; --line: #232428; --no: #E5484D; --yes: #30A46C; --on-ink: #0A0A0A; --fill: rgba(242,243,245,.12); color-scheme: dark; } }
+:root[data-theme="dark"] { --ground: #0B0B0C; --row: #000; --ink: #F2F3F5; --ink-2: #A3A8B2; --ink-3: #6C717B; --chip: #1C1D20; --line: #232428; --no: #E5484D; --yes: #30A46C; --on-ink: #0A0A0A; --fill: rgba(242,243,245,.12); color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); color: var(--ink); font-family: Inter, -apple-system, system-ui, sans-serif; -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.wrap { max-width: 1260px; margin: 0 auto; padding: 28px 16px 64px; }
+h1 { font-size: 26px; letter-spacing: -.6px; margin: 0 0 6px; text-wrap: balance; }
+.lead { margin: 0 0 22px; color: var(--ink-2); font-size: 14px; line-height: 1.5; max-width: 62ch; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 390px), 1fr)); gap: 18px; align-items: start; }
+.slot { max-width: 390px; width: 100%; justify-self: center; display: flex; flex-direction: column; gap: 8px; }
+.tag { display: flex; align-items: baseline; gap: 8px; padding: 0 4px; flex-wrap: wrap; }
+.tag b { font-size: 12px; color: var(--ink-3); letter-spacing: .8px; } .tag span { font-weight: 700; font-size: 14px; } .tag em { font-style: normal; color: var(--ink-2); font-size: 12.5px; margin-left: auto; }
+.list { background: var(--row); border-radius: 18px; border: 1px solid var(--line); overflow: hidden; }
+.r { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-bottom: 1px solid var(--line); position: relative; }
+.r:last-child { border-bottom: 0; }
+.rank { width: 20px; text-align: center; font-weight: 700; font-size: 16px; color: var(--ink-3); flex: none; }
+.thumb { width: 44px; height: 44px; border-radius: 10px; flex: none; background-size: cover; background-position: center; }
+.body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.t { font-weight: 600; font-size: 14.5px; line-height: 19px; }
+.sub { font-size: 12.5px; color: var(--ink-2); }
+.pill { border-radius: 999px; border: 1.5px solid currentColor; padding: 5px 11px; font-size: 13px; font-weight: 600; flex: none; }
+.pill.no { color: var(--no); } .pill.yes { color: var(--yes); }
+.pill.no.on { background: var(--no); color: #fff; border-color: var(--no); } .pill.yes.on { background: var(--yes); color: #fff; border-color: var(--yes); }
+.split { height: 4px; border-radius: 4px; display: flex; overflow: hidden; }
+/* 1 mini digits */
+.digits { display: flex; gap: 3px; flex: none; }
+.digits button { width: 24px; height: 28px; border-radius: 7px; background: var(--chip); font-size: 12.5px; font-weight: 700; }
+.digits .on { background: var(--ink); color: var(--on-ink); }
+.avg { font-size: 12.5px; font-weight: 700; }
+.meter { height: 4px; border-radius: 4px; background: var(--chip); overflow: hidden; } .meter i { display: block; height: 100%; background: var(--ink); border-radius: 4px; width: 0; transition: width 480ms cubic-bezier(.2,.8,.2,1); }
+/* 2 expanding chip */
+.exp { display: flex; align-items: center; gap: 4px; flex: none; background: var(--chip); border-radius: 999px; padding: 3px; }
+.exp .n { width: 26px; height: 26px; border-radius: 50%; font-size: 12.5px; font-weight: 700; display: none; }
+.exp.open .n { display: block; } .exp .n.on { background: var(--ink); color: var(--on-ink); }
+.exp .lbl { padding: 3px 9px; font-size: 13px; font-weight: 600; }
+.exp.open .lbl { display: none; }
+/* 3 letters */
+.letters { display: flex; gap: 4px; flex: none; }
+.letters button { width: 26px; height: 26px; border-radius: 8px; border: 1.5px solid var(--line); font-size: 12px; font-weight: 800; color: var(--ink-2); }
+.letters .on { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+.key { font-size: 12px; color: var(--ink-2); line-height: 16px; }
+.key b { color: var(--ink); }
+/* 4 drawer */
+.drawer { display: none; flex-wrap: wrap; gap: 6px; padding: 0 16px 13px 48px; border-bottom: 1px solid var(--line); }
+.drawer.open { display: flex; }
+.drawer button { border-radius: 999px; background: var(--chip); padding: 7px 12px; font-size: 13px; font-weight: 600; position: relative; overflow: hidden; }
+.drawer button .f { position: absolute; inset: 0 auto 0 0; background: var(--fill); width: 0; transition: width 480ms; }
+.drawer button > span { position: relative; }
+.drawer .on { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.caret { width: 30px; height: 30px; border-radius: 50%; background: var(--chip); flex: none; display: grid; place-items: center; transition: transform 200ms; }
+.caret.open { transform: rotate(180deg); }
+.caret svg { width: 12px; height: 12px; }
+/* 5 swipe reveal */
+.sw { overflow: hidden; }
+.sw .track { display: flex; transition: transform 320ms cubic-bezier(.2,.8,.2,1); }
+.sw .face { flex: none; width: 100%; display: flex; align-items: center; gap: 12px; overflow: hidden; }
+.sw .back { flex: none; width: 100%; display: flex; gap: 6px; align-items: center; }
+.sw .back button { flex: 1; height: 40px; border-radius: 10px; background: var(--chip); font-size: 13px; font-weight: 700; }
+.sw .back .on { background: var(--ink); color: var(--on-ink); }
+.sw.open .track { transform: translateX(-100%); }
+.hint { font-size: 11px; color: var(--ink-3); flex: none; }
+/* 6 long press */
+.pop { position: absolute; right: 12px; top: 50%; transform: translateY(-50%) scale(.9); opacity: 0; pointer-events: none; display: flex; gap: 4px; padding: 5px; border-radius: 999px; background: var(--row); box-shadow: 0 8px 24px rgba(0,0,0,.14), 0 0 0 1px var(--line); transition: all 160ms; z-index: 2; }
+.pop.open { opacity: 1; transform: translateY(-50%) scale(1); pointer-events: auto; }
+.pop button { min-width: 30px; height: 30px; border-radius: 999px; padding: 0 9px; font-size: 12.5px; font-weight: 700; background: var(--chip); }
+.pop .on { background: var(--ink); color: var(--on-ink); }
+.r.lp { transition: background 160ms; } .r.lp.held { background: var(--chip); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head><body>
+
+<div class="wrap">
+  <h1>Voter depuis les Tendances</h1>
+  <p class="lead">Aujourd’hui, dans la liste, seuls les Oui/Non se votent sur place ; une note ou un QCM demande d’ouvrir le take. Six façons de voter sur place, petites, à côté des Oui/Non existants. Touche pour essayer ; sur la 6, appuie longtemps sur une ligne.</p>
+  <main class="grid" id="grid"></main>
+</div>
+
+<script>
+const IMG = ['linear-gradient(135deg,#c9a27a,#6d4c35)', 'linear-gradient(135deg,#7aa6c9,#35506d)', 'linear-gradient(135deg,#9cc97a,#3f6d35)']
+const RATING = { t: 'Ta note pour la vie nocturne à Dakar\u00a0?', avg: 3.6, votes: 214 }
+const QCM = { t: 'Ton samedi parfait à Paris\u00a0?', opts: [['Brunch', 29], ['Marché', 22], ['Expo', 20], ['Apéro', 29]], votes: 188 }
+const YN = { t: 'Y a-t-il trop de touristes à Nairobi\u00a0?', yes: 58 }
+const S = {}
+
+function ynRow(n) {
+  const v = S['yn' + n]
+  return `<div class="r"><span class="rank">3</span><div class="body"><span class="t">${YN.t}</span>${v ? `<div class="split"><i style="width:${100 - YN.yes}%;background:var(--no)"></i><i style="flex:1;background:var(--yes)"></i></div>` : ''}</div>
+    <button class="pill no${v === 'no' ? ' on' : ''}" data-k="yn${n}" data-v="no">Non</button><button class="pill yes${v === 'yes' ? ' on' : ''}" data-k="yn${n}" data-v="yes">Oui</button></div>`
+}
+const meter = (w) => `<div class="meter"><i data-w="${w}%"></i></div>`
+
+const V = [
+  { name: 'Chiffres mini', note: 'les 5 notes en petit, à droite', render: () => {
+    const r = S.r1, q = S.q1
+    return `<div class="r"><span class="rank">2</span><div class="body"><span class="t">${RATING.t}</span>${r ? `<span class="avg">Moyenne ${RATING.avg.toLocaleString('fr-FR')} / 5</span>${meter(RATING.avg * 20)}` : ''}</div>
+      <div class="digits">${[1, 2, 3, 4, 5].map((d) => `<button class="${r == d ? 'on' : ''}" data-k="r1" data-v="${d}">${d}</button>`).join('')}</div></div>
+      ${ynRow(1)}
+      <div class="r"><span class="rank">4</span><div class="thumb" style="background:${IMG[0]}"></div><div class="body"><span class="t">${QCM.t}</span>${q !== undefined ? `<span class="sub">${QCM.opts[q][0]} · ${QCM.opts[q][1]}\u00a0%</span>${meter(QCM.opts[q][1])}` : ''}</div>
+      <div class="digits">${QCM.opts.map((o, k) => `<button class="${q === k ? 'on' : ''}" data-k="q1" data-v="${k}" title="${o[0]}">${'ABCD'[k]}</button>`).join('')}</div></div>` } },
+  { name: 'Pastille qui s’ouvre', note: '« Noter » s’ouvre en 1 à 5 sur place', render: () => {
+    const r = S.r2, open = S.r2open
+    return `<div class="r"><span class="rank">2</span><div class="body"><span class="t">${RATING.t}</span>${r ? `<span class="avg">Moyenne ${RATING.avg.toLocaleString('fr-FR')} / 5 · ta note ${r}</span>${meter(RATING.avg * 20)}` : ''}</div>
+      <div class="exp${open ? ' open' : ''}"><button class="lbl" data-k="r2open" data-v="1">${r ? r + ' ★' : 'Noter'}</button>${[1, 2, 3, 4, 5].map((d) => `<button class="n${r == d ? ' on' : ''}" data-k="r2" data-v="${d}">${d}</button>`).join('')}</div></div>
+      ${ynRow(2)}` } },
+  { name: 'Lettres et légende', note: 'A B C D à droite, les réponses en petit sous la question', render: () => {
+    const q = S.q3
+    return `<div class="r"><span class="rank">4</span><div class="thumb" style="background:${IMG[1]}"></div><div class="body"><span class="t">${QCM.t}</span>
+      <span class="key">${QCM.opts.map((o, k) => `<b>${'ABCD'[k]}</b> ${o[0]}${q !== undefined ? ` ${o[1]} %` : ''}`).join(' · ')}</span></div>
+      <div class="letters">${QCM.opts.map((o, k) => `<button class="${q === k ? 'on' : ''}" data-k="q3" data-v="${k}">${'ABCD'[k]}</button>`).join('')}</div></div>
+      ${ynRow(3)}` } },
+  { name: 'Tiroir', note: 'une flèche déplie les réponses sous la ligne', render: () => {
+    const q = S.q4, open = S.q4open
+    return `<div class="r"><span class="rank">4</span><div class="thumb" style="background:${IMG[2]}"></div><div class="body"><span class="t">${QCM.t}</span>${q !== undefined && !open ? `<span class="sub">Toi : ${QCM.opts[q][0]} · ${QCM.opts[q][1]}\u00a0%</span>` : ''}</div>
+      <button class="caret${open ? ' open' : ''}" data-k="q4open" data-v="1" aria-label="Voir les réponses"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></button></div>
+      <div class="drawer${open ? ' open' : ''}">${QCM.opts.map((o, k) => `<button class="${q === k ? 'on' : ''}" data-k="q4" data-v="${k}"><span class="f" data-w="${q !== undefined ? o[1] : 0}%"></span><span>${o[0]}${q !== undefined ? ` ${o[1]} %` : ''}</span></button>`).join('')}</div>
+      ${ynRow(4)}` } },
+  { name: 'Glisser pour voter', note: 'la ligne glisse et laisse place aux réponses', render: () => {
+    const q = S.q5, open = S.q5open
+    return `<div class="r sw${open ? ' open' : ''}"><div class="track">
+      <div class="face"><span class="rank">4</span><div class="thumb" style="background:${IMG[0]}"></div><div class="body"><span class="t">${QCM.t}</span>${q !== undefined ? `<span class="sub">Toi : ${QCM.opts[q][0]} · ${QCM.opts[q][1]}\u00a0%</span>` : ''}</div><button class="hint" data-k="q5open" data-v="1">‹ glisse</button></div>
+      <div class="back">${QCM.opts.map((o, k) => `<button class="${q === k ? 'on' : ''}" data-k="q5" data-v="${k}">${o[0]}</button>`).join('')}</div></div></div>
+      ${ynRow(5)}` } },
+  { name: 'Appui long', note: 'rien ne change à la ligne ; l’appui long ouvre le choix', render: () => {
+    const q = S.q6, r = S.r6, openQ = S.q6open, openR = S.r6open
+    return `<div class="r lp" data-lp="r6open"><span class="rank">2</span><div class="body"><span class="t">${RATING.t}</span>${r ? `<span class="avg">Moyenne ${RATING.avg.toLocaleString('fr-FR')} / 5 · ta note ${r}</span>` : '<span class="sub">Appui long pour noter</span>'}</div>
+      <div class="pop${openR ? ' open' : ''}">${[1, 2, 3, 4, 5].map((d) => `<button class="${r == d ? 'on' : ''}" data-k="r6" data-v="${d}">${d}</button>`).join('')}</div></div>
+      <div class="r lp" data-lp="q6open"><span class="rank">4</span><div class="thumb" style="background:${IMG[1]}"></div><div class="body"><span class="t">${QCM.t}</span>${q !== undefined ? `<span class="sub">Toi : ${QCM.opts[q][0]} · ${QCM.opts[q][1]}\u00a0%</span>` : '<span class="sub">Appui long pour répondre</span>'}</div>
+      <div class="pop${openQ ? ' open' : ''}">${QCM.opts.map((o, k) => `<button class="${q === k ? 'on' : ''}" data-k="q6" data-v="${k}">${o[0]}</button>`).join('')}</div></div>
+      ${ynRow(6)}` } },
+]
+
+const grid = document.getElementById('grid')
+function render() {
+  grid.innerHTML = V.map((v, i) => `<section class="slot"><div class="tag"><b>${String(i + 1).padStart(2, '0')}</b><span>${v.name}</span><em>${v.note}</em></div><div class="list">${v.render()}</div></section>`).join('')
+  requestAnimationFrame(() => requestAnimationFrame(() => grid.querySelectorAll('[data-w]').forEach((el) => (el.style.width = el.dataset.w))))
+}
+grid.addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-k]')
+  if (!b) return
+  const k = b.dataset.k, v = b.dataset.v
+  if (k.endsWith('open')) S[k] = !S[k]
+  else if (k.startsWith('yn')) S[k] = S[k] === v ? undefined : v
+  else {
+    const val = k.startsWith('q') ? +v : v
+    S[k] = S[k] === val ? undefined : val
+    if (k === 'r2' || k === 'q4' || k === 'q5' || k === 'q6' || k === 'r6') S[k + 'open'] = false
+  }
+  render()
+})
+let timer = null
+grid.addEventListener('pointerdown', (e) => {
+  const row = e.target.closest('[data-lp]')
+  if (!row || e.target.closest('.pop')) return
+  row.classList.add('held')
+  timer = setTimeout(() => { S[row.dataset.lp] = true; if (navigator.vibrate) navigator.vibrate(12); render() }, 420)
+})
+const cancel = () => { clearTimeout(timer); grid.querySelectorAll('.held').forEach((r) => r.classList.remove('held')) }
+grid.addEventListener('pointerup', cancel); grid.addEventListener('pointerleave', cancel); grid.addEventListener('pointercancel', cancel)
+render()
+</script>
+</body></html>
