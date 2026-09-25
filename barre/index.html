@@ -1,5 +1,5 @@
 <!doctype html><html lang="fr"><head><meta charset="utf-8">
-<title>QCM Take, trente formes</title>
+<title>QCM petite barre</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
@@ -392,6 +392,54 @@ header.top p { margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.5
 .flips .mine .bk { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
 .flips .bk b { font-size: 24px; font-weight: 800; } .flips .bk span { font-size: 12.5px; font-weight: 600; opacity: .75; }
 
+
+/* Petite barre : cinq variantes */
+.rv { display: flex; flex-direction: column; }
+.rv button { width: 100%; text-align: left; }
+.bar2 { height: 3px; border-radius: 3px; background: var(--chip); position: relative; overflow: hidden; }
+.bar2 i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--shade-3); border-radius: 3px; transition: width 560ms cubic-bezier(.2,.8,.2,1); }
+.mine .bar2 i { background: var(--ink); }
+.rv .pc { font-size: 13px; font-weight: 700; opacity: 0; transition: opacity 240ms; }
+.voted .rv .pc { opacity: 1; }
+.voted .rv button:not(.mine) .lab { color: var(--ink-2); }
+
+.rB { gap: 14px; }
+.rB button { display: grid; grid-template-columns: 1fr auto; gap: 7px 12px; align-items: baseline; padding: 2px 0; }
+.rB .lab { font-size: 15.5px; font-weight: 500; }
+.rB .mine .lab { font-weight: 700; }
+.rB .bar2 { grid-column: 1 / 3; height: 4px; }
+.rB button:not(.mine) .bar2 { background: var(--chip); }
+.rv:not(.voted-wrap) .bar2 { }
+
+.rC { gap: 10px; }
+.rC button { display: flex; flex-direction: column; gap: 2px; padding: 0; }
+.rC .lab { font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.rC .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--shade-4); flex: none; }
+.rC .mine .dot { background: var(--ink); }
+.rC .mine .lab { font-weight: 700; }
+.rC .track { display: flex; align-items: center; gap: 8px; height: 16px; padding-left: 16px; }
+.rC .track .bar2 { flex: none; width: 0; transition: width 560ms cubic-bezier(.2,.8,.2,1); background: var(--shade-3); height: 4px; }
+.rC .mine .track .bar2 { background: var(--ink); }
+.rC .track .bar2 i { display: none; }
+.rC .empty { height: 4px; border-radius: 4px; background: var(--chip); flex: 1; }
+.voted .rC .empty { display: none; }
+
+.rD { gap: 10px; }
+.rD button { display: grid; grid-template-columns: 48px 1fr; gap: 6px 10px; align-items: center; padding: 2px 0; }
+.rD .pc { font-size: 17px; font-weight: 800; letter-spacing: -0.4px; opacity: 1; color: var(--shade-4); }
+.voted .rD .pc { color: var(--ink-2); } .voted .rD .mine .pc { color: var(--ink); }
+.rD .lab { font-size: 15px; font-weight: 500; } .rD .mine .lab { font-weight: 700; }
+.rD .bar2 { grid-column: 2; }
+
+.rE button { display: grid; grid-template-columns: 22px 1fr auto; gap: 6px 10px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.rE button:last-child { border-bottom: 0; padding-bottom: 2px; }
+.rE button:first-child { padding-top: 2px; }
+.rE .ck { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--shade-4); display: grid; place-items: center; }
+.rE .ck svg { width: 12px; height: 12px; display: none; }
+.rE .mine .ck { background: var(--ink); border-color: var(--ink); color: var(--on-ink); } .rE .mine .ck svg { display: block; }
+.rE .lab { font-size: 15px; font-weight: 500; } .rE .mine .lab { font-weight: 700; }
+.rE .bar2 { grid-column: 2 / 4; height: 2px; }
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head><body>
@@ -399,8 +447,8 @@ header.top p { margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.5
 <div class="wrap">
   <header class="top">
     <div>
-      <h1>QCM : trente formes</h1>
-      <p>Chaque carte est un take du fil à 390 pt, avec son propre geste de vote. Vote pour voir les résultats ; sur les cartes simples, touche encore ta réponse pour annuler. Pas de vert ni de rouge : un QCM n'a pas de camp.</p>
+      <h1>QCM : la petite barre</h1>
+      <p>Cinq variantes du n° 21 : une barre fine sous chaque réponse, pas de grosse case. Touche une réponse pour voter, touche-la encore pour annuler.</p>
     </div>
     <button class="reset" id="reset" type="button">Tout remettre à zéro</button>
   </header>
@@ -418,67 +466,16 @@ const ICON = {
 const SHADES = ['var(--shade-1)', 'var(--shade-2)', 'var(--shade-3)', 'var(--shade-4)', 'var(--shade-5)']
 
 const TAKES = [
-  { kind: 'list', label: 'Liste', note: 'une réponse par ligne', author: 'Inès M.', face: '#7C5CFF', when: '2 h',
-    q: 'Le meilleur moment pour réviser ?', opts: [['Le matin', 412], ['L’après-midi', 158], ['Le soir', 326], ['La nuit', 214]] },
-  { kind: 'chips', label: 'Pastilles', note: 'réponses courtes, sans grille', author: 'Yanis B.', face: '#E07A3F', when: '35 min',
-    q: 'Ton réseau le plus ouvert en ce moment ?', opts: [['TikTok', 640], ['Insta', 402], ['Snap', 351], ['YouTube', 188], ['BeReal', 44], ['X', 71]] },
-  { kind: 'letters', label: 'Lettres', note: 'façon quiz, A B C D', author: 'Chloé R.', face: '#2F9E8F', when: '1 h',
-    q: 'Qui a peint « La Nuit étoilée » ?', opts: [['Claude Monet', 96], ['Vincent van Gogh', 544], ['Paul Cézanne', 61], ['Edvard Munch', 83]] },
-  { kind: 'hist', label: 'Colonnes', note: 'les parts montent', author: 'Mehdi K.', face: '#3C7BE0', when: '4 h',
-    q: 'Combien d’heures d’écran par jour ?', opts: [['− de 2 h', 88], ['2 à 4 h', 311], ['4 à 6 h', 407], ['+ de 6 h', 263]] },
-  { kind: 'stack', label: 'Barre empilée', note: 'toute la salle sur une ligne', author: 'Léa P.', face: '#C8487A', when: '20 min',
-    q: 'Tu pars où cet été ?', opts: [['Mer', 520], ['Montagne', 144], ['Ville', 233], ['Nulle part', 301]] },
-  { kind: 'bubbles', label: 'Bulles', note: 'la taille dit la part', author: 'Sacha D.', face: '#8A6D3B', when: '3 h',
-    q: 'Le meilleur fast-food ?', opts: [['Burger', 380], ['Tacos', 455], ['Pizza', 290], ['Sushi', 175]] },
-  { kind: 'ring', label: 'Anneau', note: 'la répartition d’un coup d’œil', author: 'Nora T.', face: '#5B6C8F', when: '6 h',
-    q: 'Tu écoutes ta musique comment ?', opts: [['Spotify', 702], ['Apple Music', 233], ['YouTube', 318], ['Deezer', 96]] },
-  { kind: 'rank', label: 'Classement', note: 'les lignes se réordonnent au vote', author: 'Adrien L.', face: '#2E8B57', when: '1 h',
-    q: 'La meilleure saga ?', opts: [['Harry Potter', 390], ['Star Wars', 212], ['Le Seigneur des anneaux', 268], ['Marvel', 344]] },
-  { kind: 'seg', label: 'Segmenté', note: 'trois ou quatre mots, une ligne', author: 'Emma G.', face: '#B5543A', when: '12 min',
-    q: 'Café, thé ou rien ?', opts: [['Café', 377], ['Thé', 268], ['Maté', 41], ['Rien', 215]] },
-  { kind: 'track', label: 'Piste', note: 'pour des réponses dans l’ordre', author: 'Hugo F.', face: '#6A5ACD', when: '5 h',
-    q: 'Tu te couches à quelle heure en semaine ?', opts: [['22 h', 96], ['23 h', 244], ['Minuit', 381], ['1 h', 209], ['Après', 170]] },
-  { kind: 'pile', label: 'Pile', note: 'une réponse à la fois, on feuillette', author: 'Lina S.', face: '#D0663F', when: '8 min',
-    q: 'Le plat que tu gardes à vie ?', opts: [['Raclette', 402], ['Couscous', 355], ['Lasagnes', 298], ['Ramen', 211]] },
-  { kind: 'caro', label: 'Carrousel', note: 'on fait défiler les cartes', author: 'Rayan A.', face: '#3F7E9C', when: '2 h',
-    q: 'Le film à revoir ce week-end ?', opts: [['Interstellar', 488], ['Inception', 271], ['Dune', 332], ['Your Name', 190], ['Spirited Away', 226]] },
-  { kind: 'g3', label: 'Grille', note: 'six réponses, trois par ligne', author: 'Camille V.', face: '#8B5FBF', when: '3 h',
-    q: 'Ton pays pour un Erasmus ?', opts: [['Espagne', 512], ['Italie', 301], ['Allemagne', 144], ['Portugal', 233], ['Irlande', 188], ['Suède', 97]], mono: ['ES', 'IT', 'DE', 'PT', 'IE', 'SE'] },
-  { kind: 'gauge', label: 'Jauge', note: 'une intensité, de peu à beaucoup', author: 'Théo N.', face: '#4F7D3A', when: '1 h',
-    q: 'Le bac te stresse à quel point ?', opts: [['Pas du tout', 82], ['Un peu', 214], ['Moyen', 290], ['Beaucoup', 305], ['À fond', 176]] },
-  { kind: 'ladder', label: 'Échelle', note: 'des paliers de haut en bas', author: 'Jade C.', face: '#C0508A', when: '4 h',
-    q: 'Ton budget pour un concert ?', opts: [['Plus de 100 €', 71], ['50 à 100 €', 233], ['20 à 50 €', 402], ['Moins de 20 €', 188], ['Zéro, je ne paie pas', 96]] },
-  { kind: 'duel', label: 'Face à face', note: 'deux par deux, le gagnant reste', author: 'Nathan R.', face: '#2E6FBF', when: '25 min',
-    q: 'La meilleure console de tous les temps ?', opts: [['PS2', 402], ['Switch', 355], ['GameCube', 144], ['Xbox 360', 231]] },
-  { kind: 'waffle', label: 'Gaufre', note: 'un point = une personne sur 100', author: 'Mila J.', face: '#A0522D', when: '6 h',
-    q: 'Tu lis combien de livres par an ?', opts: [['Aucun', 301], ['1 à 3', 344], ['4 à 10', 212], ['Plus de 10', 98]] },
-  { kind: 'phrase', label: 'Phrase à trous', note: 'la réponse complète la phrase', author: 'Louis D.', face: '#5D6B7A', when: '40 min',
-    q: 'Le dimanche soir, je ___ .', opts: [['dors tôt', 188], ['scrolle', 512], ['révise', 144], ['sors', 102], ['joue', 233]] },
-  { kind: 'bign', label: 'Gros chiffres', note: 'le pourcentage prend la place', author: 'Anaïs B.', face: '#B8860B', when: '1 h',
-    q: 'Le premier truc que tu fais au réveil ?', opts: [['Téléphone', 702], ['Douche', 144], ['Petit-déj', 211], ['Snooze', 318]] },
-  { kind: 'mosaic', label: 'Mosaïque', note: 'chaque case prend sa part de largeur', author: 'Enzo M.', face: '#3C8D7A', when: '2 h',
-    q: 'Tu vas en cours comment ?', opts: [['À pied', 311], ['Bus', 402], ['Vélo', 144], ['Voiture', 188]] },
-  { kind: 'radio', label: 'Boutons radio', note: 'le formulaire classique, plus sobre', author: 'Clara H.', face: '#9B4F6B', when: '5 h',
+  { kind: 'rA', label: 'Radio', note: 'le 21 tel quel', author: 'Clara H.', face: '#9B4F6B', when: '5 h',
     q: 'Tu préfères réviser seul ou en groupe ?', opts: [['Seul', 488], ['À deux', 233], ['En groupe', 190], ['Je ne révise pas', 144]] },
-  { kind: 'ppl', label: 'Sur 10 personnes', note: 'la part en silhouettes', author: 'Maël P.', face: '#6B8E23', when: '3 h',
-    q: 'Tu as déjà menti sur ton âge en ligne ?', opts: [['Jamais', 211], ['Une fois', 318], ['Souvent', 402]] },
-  { kind: 'wheel', label: 'Roue', note: 'on tourne puis on valide', author: 'Zoé L.', face: '#CD5C5C', when: '10 min',
-    q: 'Ton mois préféré ?', opts: [['Janvier', 44], ['Avril', 96], ['Juin', 233], ['Juillet', 402], ['Août', 355], ['Octobre', 211], ['Décembre', 290]] },
-  { kind: 'friends', label: 'Tes amis', note: 'qui a répondu quoi autour de toi', author: 'Ilyes K.', face: '#4682B4', when: '1 h',
-    q: 'Soirée ce samedi ?', opts: [['Chez quelqu’un', 402], ['En boîte', 188], ['Au bar', 233], ['Je reste chez moi', 311]],
-    friends: [[['Inès', '#7C5CFF'], ['Yanis', '#E07A3F'], ['Léa', '#C8487A']], [['Sacha', '#8A6D3B']], [['Nora', '#5B6C8F'], ['Hugo', '#6A5ACD']], [['Emma', '#B5543A'], ['Mehdi', '#3C7BE0']]] },
-  { kind: 'podium', label: 'Podium', note: 'les trois premiers montent sur les marches', author: 'Lucas T.', face: '#708090', when: '7 h',
-    q: 'Le meilleur rappeur français ?', opts: [['Ninho', 388], ['PNL', 344], ['SDM', 290], ['Jul', 301], ['Orelsan', 256]] },
-  { kind: 'multi', label: 'Plusieurs réponses', note: 'coche tout ce qui compte, puis valide', author: 'Sarah E.', face: '#BA55D3', when: '2 h',
-    q: 'Qu’est-ce qui te motive en cours ?', opts: [['Les potes', 512], ['Les notes', 301], ['Un prof', 188], ['La matière', 144], ['Rien du tout', 211]] },
-  { kind: 'order', label: 'Ordre de préférence', note: 'touche dans ton ordre, 1 puis 2 puis 3', author: 'Axel G.', face: '#2F4F4F', when: '3 h',
-    q: 'Classe tes saisons', opts: [['Été', 512], ['Printemps', 301], ['Automne', 233], ['Hiver', 144]] },
-  { kind: 'ruler', label: 'Réglette', note: 'on glisse jusqu’à sa réponse', author: 'Manon F.', face: '#DAA520', when: '50 min',
-    q: 'Tu dors combien d’heures par nuit ?', opts: [['5 h', 96], ['6 h', 233], ['7 h', 402], ['8 h', 311], ['9 h et +', 122]] },
-  { kind: 'chrono', label: 'Chrono', note: '10 secondes pour répondre', author: 'Noah B.', face: '#B22222', when: '5 min',
-    q: 'Sans réfléchir : chat ou chien ?', opts: [['Chat', 402], ['Chien', 455], ['Les deux', 188], ['Aucun', 61]] },
-  { kind: 'flip', label: 'Cartes retournées', note: 'le vote retourne les cartes', author: 'Lou A.', face: '#20B2AA', when: '1 h',
-    q: 'Le meilleur dessert ?', opts: [['Tiramisu', 344], ['Crêpes', 402], ['Cookies', 311], ['Fondant', 290]] },
+  { kind: 'rB', label: 'Sans rond', note: 'le texte seul, la barre dessous', author: 'Inès M.', face: '#7C5CFF', when: '2 h',
+    q: 'Le meilleur moment pour réviser ?', opts: [['Le matin', 412], ['L’après-midi', 158], ['Le soir', 326], ['La nuit', 214]] },
+  { kind: 'rC', label: 'Pourcentage au bout', note: 'le chiffre suit la barre', author: 'Yanis B.', face: '#E07A3F', when: '35 min',
+    q: 'Ton réseau le plus ouvert en ce moment ?', opts: [['TikTok', 640], ['Insta', 402], ['Snap', 351], ['YouTube', 188]] },
+  { kind: 'rD', label: 'Chiffre d’abord', note: 'le pourcentage devant la réponse', author: 'Nora T.', face: '#5B6C8F', when: '6 h',
+    q: 'Tu écoutes ta musique comment ?', opts: [['Spotify', 702], ['Apple Music', 233], ['YouTube', 318], ['Deezer', 96]] },
+  { kind: 'rE', label: 'Lignes séparées', note: 'une coche, un filet entre chaque réponse', author: 'Adrien L.', face: '#2E8B57', when: '1 h',
+    q: 'La meilleure saga ?', opts: [['Harry Potter', 390], ['Star Wars', 212], ['Le Seigneur des anneaux', 268], ['Marvel', 344]] },
 ]
 
 const state = TAKES.map(() => null)
@@ -555,6 +552,16 @@ function body(take, i) {
     }
     case 'seg':
       return `<div class="seg">${take.opts.map(([t], k) => btn(k, '', `<span class="fill" data-h="${p(k)}%"></span><span class="t">${t}</span><b>${p(k)}&nbsp;%</b>`)).join('')}</div>`
+    case 'rA':
+      return `<div class="radio">${take.opts.map(([t], k) => btn(k, '', `<span class="rb"></span><span>${t}</span><b>${p(k)}&nbsp;%</b><span class="ln"><i data-w="${p(k)}%"></i></span>`)).join('')}</div>`
+    case 'rB':
+      return `<div class="rv rB">${take.opts.map(([t], k) => btn(k, '', `<span class="lab">${t}</span><span class="pc">${p(k)}&nbsp;%</span><span class="bar2"><i data-w="${p(k)}%"></i></span>`)).join('')}</div>`
+    case 'rC':
+      return `<div class="rv rC">${take.opts.map(([t], k) => btn(k, '', `<span class="lab"><span class="dot"></span>${t}</span><span class="track"><span class="bar2" data-w="${voted ? Math.max(p(k) * 2.4, 4) + 'px' : '0px'}"><i></i></span><span class="empty"></span><span class="pc">${p(k)}&nbsp;%</span></span>`)).join('')}</div>`
+    case 'rD':
+      return `<div class="rv rD">${take.opts.map(([t], k) => btn(k, '', `<span class="pc">${voted ? p(k) + '&nbsp;%' : '—'}</span><span class="lab">${t}</span><span></span><span class="bar2"><i data-w="${p(k)}%"></i></span>`)).join('')}</div>`
+    case 'rE':
+      return `<div class="rv rE">${take.opts.map(([t], k) => btn(k, '', `<span class="ck">${ICON.check.replace('class="check" ', '')}</span><span class="lab">${t}</span><span class="pc">${p(k)}&nbsp;%</span><span></span><span class="bar2"><i data-w="${p(k)}%"></i></span>`)).join('')}</div>`
     case 'pile': {
       if (voted) return results(take, pct, [mine])
       const n = take.opts.length, at = ex[i].at ?? 0
