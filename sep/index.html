@@ -1,0 +1,849 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8">
+<title>Cascade séparée</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root {
+  --page: #FFFFFF;
+  --ground: #F6F7F9;
+  --row: #FFFFFF;
+  --ink: #111214;
+  --ink-2: #5F6570;
+  --ink-3: #9AA0AA;
+  --chip: #F0F2F5;
+  --line: #E6E8EC;
+  --fill: rgba(17, 18, 20, 0.08);
+  --fill-mine: rgba(17, 18, 20, 0.16);
+  --shade-1: #111214;
+  --shade-2: #4A5060;
+  --shade-3: #8A909C;
+  --shade-4: #C4C8D0;
+  --shade-5: #E1E4E9;
+  --on-ink: #FFFFFF;
+  --glass: rgba(255,255,255,.55); --glass-mine: rgba(255,255,255,.85); --glass-hi: rgba(255,255,255,.9); --glass-edge: rgba(255,255,255,.6);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #000000; --ground: #0B0B0C; --row: #000000; --ink: #F2F3F5; --ink-2: #A3A8B2; --ink-3: #6C717B;
+    --chip: #1C1D20; --line: #232428; --fill: rgba(242, 243, 245, 0.10); --fill-mine: rgba(242, 243, 245, 0.22);
+    --shade-1: #F2F3F5; --shade-2: #B9BEC8; --shade-3: #7F8591; --shade-4: #4B5059; --shade-5: #2C2F35; --on-ink: #0A0A0A; --glass: rgba(40,42,48,.55); --glass-mine: rgba(60,62,70,.8); --glass-hi: rgba(255,255,255,.12); --glass-edge: rgba(255,255,255,.08);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #000000; --ground: #0B0B0C; --row: #000000; --ink: #F2F3F5; --ink-2: #A3A8B2; --ink-3: #6C717B;
+  --chip: #1C1D20; --line: #232428; --fill: rgba(242, 243, 245, 0.10); --fill-mine: rgba(242, 243, 245, 0.22);
+  --shade-1: #F2F3F5; --shade-2: #B9BEC8; --shade-3: #7F8591; --shade-4: #4B5059; --shade-5: #2C2F35; --on-ink: #0A0A0A; --glass: rgba(40,42,48,.55); --glass-mine: rgba(60,62,70,.8); --glass-hi: rgba(255,255,255,.12); --glass-edge: rgba(255,255,255,.08);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: Inter, -apple-system, "SF Pro Text", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums;
+}
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.wrap { max-width: 1260px; margin: 0 auto; padding: 28px 16px 64px; }
+header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; margin-bottom: 22px; }
+header.top h1 { font-size: 26px; line-height: 1.15; letter-spacing: -0.6px; margin: 0 0 6px; text-wrap: balance; }
+header.top p { margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.5; max-width: 60ch; }
+.reset { background: var(--chip); border-radius: 999px; padding: 9px 16px; font-weight: 600; font-size: 13.5px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 390px), 1fr)); gap: 18px; align-items: start; }
+.cell { min-width: 0; }
+.cell > .slot { width: 100%; max-width: 390px; margin: 0 auto; }
+.slot { display: flex; flex-direction: column; gap: 8px; }
+.tag { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; padding: 0 4px; }
+.tag span { white-space: nowrap; }
+.tag b { font-size: 12px; font-weight: 700; letter-spacing: 0.8px; color: var(--ink-3); }
+.tag span { font-size: 14px; font-weight: 700; }
+.tag em { font-style: normal; font-size: 12.5px; color: var(--ink-2); margin-left: auto; }
+
+/* The feed row, geometry of FeedTakeRow at 390 pt */
+.row { background: var(--row); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--line); }
+.by { display: flex; align-items: center; gap: 6px; min-height: 24px; }
+.face { width: 24px; height: 24px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 10.5px; font-weight: 700; color: #fff; }
+.by .name { font-weight: 600; font-size: 15px; margin-left: 2px; }
+.by .when { font-weight: 500; font-size: 13px; color: var(--ink-2); }
+.by .dots { margin-left: auto; color: var(--ink-2); font-size: 18px; letter-spacing: 1px; line-height: 1; }
+.q { font-weight: 600; font-size: 17px; line-height: 22px; letter-spacing: -0.2px; margin: 0; }
+.foot { display: flex; align-items: center; gap: 20px; color: var(--ink-2); }
+.foot svg { width: 17px; height: 17px; display: block; }
+.foot .count { margin-left: auto; font-size: 13.5px; font-weight: 500; }
+.hint { font-size: 12.5px; color: var(--ink-3); margin: -4px 0 0; }
+
+/* 01 Liste */
+.list { display: flex; flex-direction: column; gap: 8px; }
+.opt { position: relative; overflow: hidden; min-height: 44px; border-radius: 12px; background: var(--chip); display: flex; align-items: center; gap: 8px; padding: 0 14px; text-align: left; font-size: 14.5px; font-weight: 500; width: 100%; }
+.opt .fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--fill); transition: width 520ms cubic-bezier(.2,.8,.2,1) 60ms; }
+.opt.mine .fill { background: var(--fill-mine); }
+.opt > :not(.fill) { position: relative; }
+.opt .pct { margin-left: auto; font-weight: 600; font-size: 13.5px; opacity: 0; transition: opacity 240ms; }
+.voted .opt .pct { opacity: 1; }
+.opt.mine { font-weight: 700; }
+.check { width: 14px; height: 14px; flex: none; }
+
+/* 02 Pastilles */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chipo { position: relative; overflow: hidden; border-radius: 999px; background: var(--chip); padding: 9px 14px; font-size: 14px; font-weight: 500; display: inline-flex; gap: 6px; align-items: center; }
+.chipo .fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--fill); transition: width 520ms cubic-bezier(.2,.8,.2,1); }
+.chipo.mine { background: var(--ink); color: var(--on-ink); font-weight: 600; }
+.chipo.mine .fill { display: none; }
+.chipo > :not(.fill) { position: relative; }
+.chipo .pct { font-weight: 600; font-size: 12.5px; opacity: .72; display: none; }
+.voted .chipo .pct { display: inline; }
+
+/* 03 Lettres */
+.letters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.lt { position: relative; overflow: hidden; border-radius: 14px; background: var(--chip); padding: 12px; min-height: 76px; display: flex; flex-direction: column; justify-content: space-between; text-align: left; gap: 8px; }
+.lt .l { width: 26px; height: 26px; border-radius: 8px; background: var(--row); display: grid; place-items: center; font-weight: 800; font-size: 13px; }
+.lt .t { font-size: 14px; font-weight: 600; line-height: 18px; }
+.lt .fill { position: absolute; inset: auto 0 0 0; height: 0; background: var(--fill); transition: height 560ms cubic-bezier(.2,.8,.2,1); }
+.lt.mine .fill { background: var(--fill-mine); }
+.lt.mine .l { background: var(--ink); color: var(--on-ink); }
+.lt > :not(.fill) { position: relative; }
+.lt .pct { position: absolute; top: 12px; right: 12px; font-weight: 700; font-size: 13px; opacity: 0; transition: opacity 240ms; }
+.voted .lt .pct { opacity: 1; }
+
+/* 04 Histogramme */
+.hist { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; align-items: end; }
+.col { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.col .bar { width: 100%; height: 96px; border-radius: 12px; background: var(--chip); position: relative; overflow: hidden; }
+.col .bar i { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: var(--fill); border-radius: 12px 12px 0 0; transition: height 560ms cubic-bezier(.2,.8,.2,1); }
+.col.mine .bar i { background: var(--ink); }
+.col .pct { font-weight: 700; font-size: 13px; min-height: 16px; opacity: 0; transition: opacity 240ms; }
+.voted .col .pct { opacity: 1; }
+.col .t { font-size: 12.5px; font-weight: 500; line-height: 15px; color: var(--ink-2); }
+.col.mine .t { color: var(--ink); font-weight: 700; }
+
+/* 05 Barre empilée */
+.stack-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.stack-opts button { border-radius: 999px; border: 1.5px solid var(--line); padding: 8px 13px; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 7px; }
+.stack-opts .sw { width: 9px; height: 9px; border-radius: 3px; display: none; }
+.voted .stack-opts .sw { display: inline-block; }
+.stack-opts .mine { border-color: var(--ink); font-weight: 700; }
+.stack-opts .pct { font-weight: 600; font-size: 12.5px; color: var(--ink-2); display: none; }
+.voted .stack-opts .pct { display: inline; }
+.stackbar { height: 10px; border-radius: 99px; background: var(--chip); overflow: hidden; display: flex; gap: 2px; }
+.stackbar i { height: 100%; width: 0; transition: width 600ms cubic-bezier(.2,.8,.2,1); }
+
+/* 06 Bulles */
+.bubbles { display: flex; align-items: center; justify-content: space-between; height: 156px; }
+.bub { border-radius: 50%; overflow: hidden; display: grid; place-items: center; text-align: center; background: var(--chip); font-size: 12.5px; font-weight: 600; line-height: 15px; padding: 4px; transition: width 560ms cubic-bezier(.2,.8,.2,1), height 560ms cubic-bezier(.2,.8,.2,1), background 240ms; flex: none; }
+.bub.mine { background: var(--ink); color: var(--on-ink); }
+.bub .pct { display: block; font-weight: 800; font-size: 15px; }
+
+/* 07 Anneau */
+.ring { display: grid; grid-template-columns: 132px 1fr; gap: 14px; align-items: center; }
+.ring svg { width: 132px; height: 132px; display: block; }
+.ring .centre { font-weight: 800; font-size: 22px; fill: var(--ink); }
+.ring .sub { font-size: 10.5px; font-weight: 600; fill: var(--ink-2); letter-spacing: .6px; }
+.legend { display: flex; flex-direction: column; gap: 6px; }
+.legend button { display: flex; align-items: center; gap: 8px; min-height: 36px; border-radius: 10px; padding: 0 10px; background: var(--chip); font-size: 14px; font-weight: 500; text-align: left; }
+.legend .sw { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.legend .pct { margin-left: auto; font-weight: 700; font-size: 13px; opacity: 0; transition: opacity 240ms; }
+.voted .legend .pct { opacity: 1; }
+.legend .mine { box-shadow: inset 0 0 0 1.5px var(--ink); font-weight: 700; }
+
+/* 08 Classement */
+.rank { display: flex; flex-direction: column; gap: 6px; position: relative; }
+.rk { position: relative; height: 44px; border-radius: 12px; background: var(--chip); display: flex; align-items: center; gap: 10px; padding: 0 12px; overflow: hidden; width: 100%; text-align: left; transition: transform 520ms cubic-bezier(.2,.8,.2,1); font-size: 14.5px; font-weight: 500; }
+.rk .n { width: 22px; height: 22px; border-radius: 7px; background: var(--row); display: grid; place-items: center; font-size: 12px; font-weight: 800; color: var(--ink-2); flex: none; }
+.rk .fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--fill); transition: width 520ms cubic-bezier(.2,.8,.2,1) 420ms; }
+.rk.mine .fill { background: var(--fill-mine); }
+.rk.mine { font-weight: 700; }
+.rk.first .n { background: var(--ink); color: var(--on-ink); }
+.rk > :not(.fill) { position: relative; }
+.rk .pct { margin-left: auto; font-weight: 700; font-size: 13.5px; opacity: 0; transition: opacity 240ms 420ms; }
+.voted .rk .pct { opacity: 1; }
+
+/* 09 Segmenté */
+.seg { display: flex; background: var(--chip); border-radius: 14px; padding: 4px; gap: 4px; }
+.seg button { flex: 1; position: relative; overflow: hidden; min-height: 44px; border-radius: 10px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); line-height: 16px; padding: 6px 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.seg .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: var(--fill); transition: height 560ms cubic-bezier(.2,.8,.2,1); }
+.seg .mine .fill { background: var(--fill-mine); }
+.seg button > :not(.fill) { position: relative; }
+.seg b { font-size: 12px; font-weight: 700; color: var(--ink); display: none; }
+.voted .seg b { display: block; }
+.voted .seg button { min-height: 58px; }
+.seg .mine { background: var(--row); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.segres { display: flex; gap: 4px; padding: 0 4px; }
+.segres div { flex: 1; display: flex; flex-direction: column; gap: 5px; align-items: center; }
+.segres i { display: block; height: 4px; border-radius: 4px; background: var(--shade-4); width: 0; transition: width 520ms cubic-bezier(.2,.8,.2,1); align-self: flex-start; }
+.segres .mine i { background: var(--ink); }
+.segres b { font-size: 13px; font-weight: 700; opacity: 0; transition: opacity 240ms; }
+.voted .segres b { opacity: 1; }
+.segres .mine b { color: var(--ink); }
+
+/* 10 Piste */
+.track { position: relative; padding: 10px 6px 0; }
+.track .rail { height: 4px; border-radius: 4px; background: var(--chip); position: relative; margin: 0 14px; }
+.track .stops { display: flex; justify-content: space-between; position: relative; margin-top: -14px; }
+.stop { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 72px; text-align: center; }
+.stop .dot { width: 24px; height: 24px; border-radius: 50%; background: var(--row); border: 2px solid var(--shade-4); transition: transform 200ms, background 200ms, border-color 200ms; }
+.stop.mine .dot { background: var(--ink); border-color: var(--ink); transform: scale(1.15); }
+.stop .t { font-size: 12.5px; font-weight: 600; line-height: 15px; color: var(--ink-2); }
+.stop.mine .t { color: var(--ink); }
+.stop .bar { width: 36px; height: 0; border-radius: 6px 6px 0 0; background: var(--fill); transition: height 520ms cubic-bezier(.2,.8,.2,1); align-self: center; }
+.stop.mine .bar { background: var(--ink); }
+.stop .pct { font-size: 12.5px; font-weight: 700; opacity: 0; transition: opacity 240ms; }
+.voted .stop .pct { opacity: 1; }
+.track .bars { display: flex; justify-content: space-between; align-items: flex-end; height: 66px; margin-bottom: 18px; }
+.track .bars > div { width: 72px; display: flex; flex-direction: column; align-items: center; gap: 4px; justify-content: flex-end; height: 100%; }
+
+
+/* shared compact results */
+.res { display: flex; flex-direction: column; gap: 6px; }
+.res div { position: relative; overflow: hidden; height: 36px; border-radius: 10px; background: var(--chip); display: flex; align-items: center; padding: 0 12px; font-size: 14px; font-weight: 500; gap: 8px; }
+.res div i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--fill); transition: width 520ms cubic-bezier(.2,.8,.2,1); }
+.res div.mine { font-weight: 700; } .res div.mine i { background: var(--fill-mine); }
+.res div > :not(i) { position: relative; } .res div b { margin-left: auto; font-size: 13px; }
+.sub-note { font-size: 12.5px; color: var(--ink-2); font-weight: 500; }
+.cta { align-self: flex-start; background: var(--ink); color: var(--on-ink); border-radius: 999px; padding: 10px 18px; font-weight: 600; font-size: 14px; }
+.cta[disabled] { opacity: .35; cursor: default; }
+.ghostbtn { background: var(--chip); border-radius: 999px; padding: 10px 16px; font-weight: 600; font-size: 14px; }
+
+/* 11 Pile */
+.pile { position: relative; height: 150px; }
+.pile .card { position: absolute; inset: 0; border-radius: 16px; background: var(--chip); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+.pile .card small { font-size: 12px; font-weight: 600; color: var(--ink-3); letter-spacing: .6px; }
+.pile .under { transform: translateY(8px) scale(.95); opacity: .6; } .pile .under2 { transform: translateY(16px) scale(.9); opacity: .35; }
+.pilebar { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+.pilebar .ghostbtn { width: 44px; padding: 10px 0; text-align: center; }
+.pilebar .cta { margin-left: auto; }
+
+/* 12 Carrousel */
+.caro { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -16px; padding: 0 16px 4px; scrollbar-width: none; }
+.caro::-webkit-scrollbar { display: none; }
+.caro button { scroll-snap-align: start; flex: none; width: 132px; height: 150px; border-radius: 16px; background: var(--chip); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; padding: 12px; text-align: left; gap: 2px; }
+.caro .big { font-size: 34px; font-weight: 800; letter-spacing: -1px; color: var(--ink-3); position: absolute; top: 10px; left: 12px; }
+.caro .t { font-size: 14.5px; font-weight: 700; line-height: 18px; }
+.caro .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: var(--fill); transition: height 560ms cubic-bezier(.2,.8,.2,1); }
+.caro .mine .fill { background: var(--fill-mine); } .caro button > :not(.fill) { position: relative; }
+.caro .pct { font-size: 13px; font-weight: 700; display: none; } .voted .caro .pct { display: block; }
+.caro .mine .big { color: var(--ink); }
+.caro button .big { position: absolute; }
+
+/* 13 Grille */
+.g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.g3 button { position: relative; overflow: hidden; border-radius: 14px; background: var(--chip); padding: 12px 6px 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.g3 .mono { width: 38px; height: 38px; border-radius: 50%; background: var(--row); display: grid; place-items: center; font-weight: 800; font-size: 13px; letter-spacing: .4px; }
+.g3 .mine .mono { background: var(--ink); color: var(--on-ink); }
+.g3 .t { font-size: 13px; font-weight: 600; }
+.g3 .pct { font-size: 12px; font-weight: 700; color: var(--ink-2); min-height: 15px; opacity: 0; transition: opacity 240ms; } .voted .g3 .pct { opacity: 1; }
+.g3 .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: var(--fill); transition: height 560ms cubic-bezier(.2,.8,.2,1); }
+.g3 .mine .fill { background: var(--fill-mine); } .g3 button > :not(.fill) { position: relative; }
+
+/* 14 Jauge */
+.gauge { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.gauge svg { width: 240px; height: 132px; display: block; }
+.gauge .lead { font-size: 22px; font-weight: 800; fill: var(--ink); } .gauge .leadt { font-size: 11px; font-weight: 600; fill: var(--ink-2); letter-spacing: .5px; }
+.gsteps { display: flex; gap: 6px; width: 100%; }
+.gsteps button { flex: 1; min-height: 40px; border-radius: 10px; background: var(--chip); font-size: 12.5px; font-weight: 600; line-height: 14px; padding: 4px 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.gsteps .mine { background: var(--ink); color: var(--on-ink); }
+.gsteps b { font-size: 11.5px; display: none; } .voted .gsteps b { display: block; }
+
+/* 15 Échelle */
+.ladder { position: relative; display: flex; flex-direction: column; gap: 4px; padding-left: 4px; }
+.ladder::before { content: ''; position: absolute; left: 15px; top: 16px; bottom: 16px; width: 2px; background: var(--chip); }
+.ladder button { display: flex; align-items: center; gap: 12px; min-height: 40px; text-align: left; font-size: 14.5px; font-weight: 500; }
+.ladder .dot { width: 24px; height: 24px; border-radius: 50%; background: var(--row); border: 2px solid var(--shade-4); flex: none; position: relative; display: grid; place-items: center; transition: transform 300ms; }
+.ladder .mine .dot { background: var(--ink); border-color: var(--ink); }
+.ladder .mine { font-weight: 700; }
+.ladder .ln { flex: 1; height: 6px; border-radius: 6px; background: var(--chip); position: relative; overflow: hidden; max-width: 120px; margin-left: auto; opacity: 0; transition: opacity 240ms; }
+.voted .ladder .ln { opacity: 1; }
+.ladder .ln i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--shade-3); transition: width 520ms cubic-bezier(.2,.8,.2,1); }
+.ladder .mine .ln i { background: var(--ink); }
+.ladder b { font-size: 13px; width: 40px; text-align: right; opacity: 0; transition: opacity 240ms; } .voted .ladder b { opacity: 1; }
+
+/* 16 Face à face */
+.duel { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; }
+.duel button { min-height: 104px; border-radius: 16px; background: var(--chip); font-size: 17px; font-weight: 700; padding: 10px; line-height: 21px; transition: transform 150ms; }
+.duel button:active { transform: scale(.97); }
+.duel .ou { font-size: 13px; font-weight: 700; color: var(--ink-3); }
+.round { display: flex; gap: 4px; align-items: center; }
+.round i { width: 18px; height: 4px; border-radius: 4px; background: var(--chip); } .round i.on { background: var(--ink); }
+
+/* 17 Gaufre */
+.waffle { display: grid; grid-template-columns: repeat(20, 1fr); gap: 3px; }
+.waffle i { aspect-ratio: 1; border-radius: 50%; background: var(--chip); transition: background 300ms; }
+.wlegend { display: flex; flex-wrap: wrap; gap: 6px; }
+.wlegend button { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; background: var(--chip); padding: 8px 12px; font-size: 13.5px; font-weight: 500; }
+.wlegend .sw { width: 9px; height: 9px; border-radius: 50%; }
+.wlegend .mine { box-shadow: inset 0 0 0 1.5px var(--ink); font-weight: 700; }
+.wlegend b { font-size: 12.5px; display: none; } .voted .wlegend b { display: inline; }
+
+/* 18 Phrase */
+.sentence { font-size: 20px; font-weight: 700; line-height: 30px; letter-spacing: -0.3px; margin: 0; }
+.blank { display: inline-block; min-width: 92px; border-bottom: 2.5px solid var(--ink); text-align: center; color: var(--ink-3); transition: color 200ms; }
+.voted .blank { color: var(--ink); }
+.words { display: flex; flex-wrap: wrap; gap: 8px; }
+.words button { border-radius: 10px; border: 1.5px dashed var(--shade-4); padding: 8px 12px; font-size: 14.5px; font-weight: 600; display: inline-flex; gap: 6px; align-items: baseline; }
+.words .mine { border-style: solid; border-color: var(--ink); background: var(--ink); color: var(--on-ink); }
+.words b { font-size: 12.5px; opacity: .7; display: none; } .voted .words b { display: inline; }
+
+/* 19 Gros chiffres */
+.bign { display: flex; flex-direction: column; }
+.bign button { display: flex; align-items: baseline; gap: 14px; padding: 6px 0; border-bottom: 1px solid var(--line); text-align: left; }
+.bign button:last-child { border-bottom: 0; }
+.bign .n { width: 78px; font-size: 30px; font-weight: 800; letter-spacing: -1px; color: var(--shade-4); }
+.voted .bign .n { color: var(--ink-3); } .voted .bign .mine .n { color: var(--ink); }
+.bign .t { font-size: 15.5px; font-weight: 600; }
+
+/* 20 Mosaïque */
+.mosaic { display: flex; height: 132px; gap: 4px; }
+.mosaic button { flex: 1 1 0; min-width: 0; border-radius: 12px; background: var(--chip); display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; padding: 10px; text-align: left; transition: flex-grow 600ms cubic-bezier(.2,.8,.2,1), background 200ms; overflow: hidden; }
+.mosaic .t { font-size: 13.5px; font-weight: 700; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.mosaic b { font-size: 17px; font-weight: 800; white-space: nowrap; display: none; } .voted .mosaic b { display: block; }
+.mosaic .mine { background: var(--ink); color: var(--on-ink); }
+
+/* 21 Radio */
+.radio { display: flex; flex-direction: column; gap: 2px; }
+.radio button { display: grid; grid-template-columns: 22px 1fr auto; gap: 4px 12px; align-items: center; padding: 8px 0; text-align: left; font-size: 15px; font-weight: 500; }
+.radio .rb { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--shade-4); display: grid; place-items: center; }
+.radio .mine .rb { border-color: var(--ink); } .radio .mine .rb::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--ink); }
+.radio b { font-size: 13px; opacity: 0; transition: opacity 240ms; } .voted .radio b { opacity: 1; }
+.radio .ln { grid-column: 2 / 4; height: 3px; border-radius: 3px; background: var(--chip); overflow: hidden; position: relative; display: none; }
+.voted .radio .ln { display: block; }
+.radio .ln i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--shade-3); transition: width 520ms cubic-bezier(.2,.8,.2,1); }
+.radio .mine .ln i { background: var(--ink); }
+
+/* 22 Personnes */
+.ppl { display: flex; flex-direction: column; gap: 8px; }
+.ppl button { display: flex; flex-direction: column; gap: 6px; border-radius: 12px; background: var(--chip); padding: 10px 12px; text-align: left; }
+.ppl .top { display: flex; width: 100%; font-size: 14.5px; font-weight: 600; } .ppl .top b { margin-left: auto; font-size: 13px; display: none; } .voted .ppl .top b { display: inline; }
+.ppl .men { display: none; gap: 4px; } .voted .ppl .men { display: flex; }
+.ppl .men svg { width: 16px; height: 16px; color: var(--shade-4); transition: color 200ms; }
+.ppl .men svg.on { color: var(--shade-2); } .ppl .mine .men svg.on { color: var(--ink); }
+.ppl .mine { box-shadow: inset 0 0 0 1.5px var(--ink); }
+
+/* 23 Roue */
+.wheelbox { position: relative; height: 132px; border-radius: 14px; background: var(--chip); overflow: hidden; }
+.wheel { height: 100%; overflow-y: auto; scroll-snap-type: y mandatory; scrollbar-width: none; padding: 44px 0; }
+.wheel::-webkit-scrollbar { display: none; }
+.wheel div { height: 44px; scroll-snap-align: center; display: grid; place-items: center; font-size: 17px; font-weight: 600; color: var(--ink-3); }
+.wheelbox::after { content: ''; position: absolute; left: 8px; right: 8px; top: 44px; height: 44px; border-radius: 10px; background: var(--row); z-index: 0; pointer-events: none; mix-blend-mode: normal; opacity: .0; }
+.wheelbox .band { position: absolute; left: 8px; right: 8px; top: 44px; height: 44px; border-radius: 10px; border: 1.5px solid var(--ink); pointer-events: none; }
+
+/* 24 Amis */
+.fr { display: flex; flex-direction: column; gap: 8px; }
+.fr button { position: relative; overflow: hidden; border-radius: 12px; background: var(--chip); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; text-align: left; }
+.fr .top { display: flex; width: 100%; font-size: 14.5px; font-weight: 600; } .fr .top b { margin-left: auto; font-size: 13px; display: none; } .voted .fr .top b { display: inline; }
+.fr .faces { display: none; align-items: center; } .voted .fr .faces { display: flex; }
+.fr .faces span { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--chip); margin-left: -6px; font-size: 9px; font-weight: 700; color: #fff; display: grid; place-items: center; }
+.fr .faces span:first-child { margin-left: 0; }
+.fr .faces em { font-style: normal; font-size: 12.5px; color: var(--ink-2); margin-left: 6px; }
+.fr .fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--fill); transition: width 520ms cubic-bezier(.2,.8,.2,1); }
+.fr .mine .fill { background: var(--fill-mine); } .fr button > :not(.fill) { position: relative; }
+
+/* 25 Podium */
+.podium { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; align-items: end; height: 170px; }
+.podium div { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.podium .t { font-size: 13px; font-weight: 700; line-height: 15px; }
+.podium .b { width: 100%; height: 0; border-radius: 12px 12px 4px 4px; background: var(--chip); display: flex; justify-content: center; padding-top: 8px; font-weight: 800; font-size: 18px; transition: height 600ms cubic-bezier(.2,.8,.2,1); }
+.podium .first .b { background: var(--ink); color: var(--on-ink); }
+.podium .p { font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
+.podium .mine .t::after { content: ' ·\00a0toi'; color: var(--ink-3); font-weight: 600; }
+
+/* 26 Plusieurs */
+.multi { display: flex; flex-direction: column; gap: 6px; }
+.multi button { display: flex; align-items: center; gap: 10px; min-height: 44px; border-radius: 12px; background: var(--chip); padding: 0 12px; font-size: 14.5px; font-weight: 500; text-align: left; }
+.multi .box { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--shade-4); display: grid; place-items: center; flex: none; }
+.multi .on .box { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.multi .box svg { width: 12px; height: 12px; display: none; } .multi .on .box svg { display: block; }
+
+/* 27 Ordre */
+.order { display: flex; flex-direction: column; gap: 6px; }
+.order button { display: flex; align-items: center; gap: 10px; min-height: 44px; border-radius: 12px; background: var(--chip); padding: 0 12px; font-size: 14.5px; font-weight: 500; text-align: left; }
+.order .n { width: 24px; height: 24px; border-radius: 8px; border: 1.5px dashed var(--shade-4); display: grid; place-items: center; font-size: 12.5px; font-weight: 800; flex: none; }
+.order .on .n { border: 0; background: var(--ink); color: var(--on-ink); }
+.cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cmp h4 { margin: 0 0 6px; font-size: 11.5px; letter-spacing: .6px; color: var(--ink-3); font-weight: 700; }
+.cmp ol { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.cmp li { display: flex; gap: 8px; align-items: center; font-size: 13.5px; font-weight: 600; background: var(--chip); border-radius: 10px; padding: 7px 9px; }
+.cmp li span { width: 18px; height: 18px; border-radius: 6px; background: var(--row); display: grid; place-items: center; font-size: 11px; font-weight: 800; flex: none; }
+.cmp li.same { box-shadow: inset 0 0 0 1.5px var(--ink); }
+
+/* 28 Réglette */
+.ruler { display: flex; flex-direction: column; gap: 10px; }
+.ruler input { width: 100%; accent-color: var(--ink); height: 28px; }
+.ticks { display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+.ticks span { width: 20%; text-align: center; } .ticks span:first-child { text-align: left; } .ticks span:last-child { text-align: right; }
+.ticks .cur { color: var(--ink); }
+
+/* 29 Chrono */
+.clock { height: 6px; border-radius: 6px; background: var(--chip); overflow: hidden; }
+.clock i { display: block; height: 100%; width: 100%; background: var(--ink); }
+.clock.run i { animation: drain 10s linear forwards; }
+@keyframes drain { to { width: 0; } }
+.chrono-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.chrono-opts button { min-height: 52px; border-radius: 12px; background: var(--chip); font-size: 15px; font-weight: 700; }
+.chrono-opts[aria-disabled="true"] { filter: blur(5px); opacity: .6; pointer-events: none; }
+
+/* 30 Retournées */
+.flips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; perspective: 800px; }
+.flips button { height: 92px; position: relative; }
+.flips .in { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform 600ms cubic-bezier(.2,.8,.2,1); }
+.flips .flipped { transform: rotateY(180deg); }
+.flips .f, .flips .bk { position: absolute; inset: 0; border-radius: 14px; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.flips .f { background: var(--chip); font-size: 15.5px; font-weight: 700; }
+.flips .bk { background: var(--row); border: 1.5px solid var(--line); transform: rotateY(180deg); }
+.flips .mine .bk { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+.flips .bk b { font-size: 24px; font-weight: 800; } .flips .bk span { font-size: 12.5px; font-weight: 600; opacity: .75; }
+
+
+/* Petite barre : cinq variantes */
+.rv { display: flex; flex-direction: column; }
+.rv button { width: 100%; text-align: left; }
+.bar2 { height: 3px; border-radius: 3px; background: var(--chip); position: relative; overflow: hidden; }
+.bar2 i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--shade-3); border-radius: 3px; transition: width 560ms cubic-bezier(.2,.8,.2,1); }
+.mine .bar2 i { background: var(--ink); }
+.rv .pc { font-size: 13px; font-weight: 700; opacity: 0; transition: opacity 240ms; }
+.voted .rv .pc { opacity: 1; }
+.voted .rv button:not(.mine) .lab { color: var(--ink-2); }
+
+.rB { gap: 14px; }
+.rB button { display: grid; grid-template-columns: 1fr auto; gap: 7px 12px; align-items: baseline; padding: 2px 0; }
+.rB .lab { font-size: 15.5px; font-weight: 500; }
+.rB .mine .lab { font-weight: 700; }
+.rB .bar2 { grid-column: 1 / 3; height: 4px; }
+.rB button:not(.mine) .bar2 { background: var(--chip); }
+.rv:not(.voted-wrap) .bar2 { }
+
+.rC { gap: 10px; }
+.rC button { display: flex; flex-direction: column; gap: 2px; padding: 0; }
+.rC .lab { font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.rC .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--shade-4); flex: none; }
+.rC .mine .dot { background: var(--ink); }
+.rC .mine .lab { font-weight: 700; }
+.rC .track { display: flex; align-items: center; gap: 8px; height: 16px; padding-left: 16px; }
+.rC .track .bar2 { flex: none; width: 0; transition: width 560ms cubic-bezier(.2,.8,.2,1); background: var(--shade-3); height: 4px; }
+.rC .mine .track .bar2 { background: var(--ink); }
+.rC .track .bar2 i { display: none; }
+.rC .empty { height: 4px; border-radius: 4px; background: var(--chip); flex: 1; }
+.voted .rC .empty { display: none; }
+
+.rD { gap: 10px; }
+.rD button { display: grid; grid-template-columns: 48px 1fr; gap: 6px 10px; align-items: center; padding: 2px 0; }
+.rD .pc { font-size: 17px; font-weight: 800; letter-spacing: -0.4px; opacity: 1; color: var(--shade-4); }
+.voted .rD .pc { color: var(--ink-2); } .voted .rD .mine .pc { color: var(--ink); }
+.rD .lab { font-size: 15px; font-weight: 500; } .rD .mine .lab { font-weight: 700; }
+.rD .bar2 { grid-column: 2; }
+
+.rE button { display: grid; grid-template-columns: 22px 1fr auto; gap: 6px 10px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.rE button:last-child { border-bottom: 0; padding-bottom: 2px; }
+.rE button:first-child { padding-top: 2px; }
+.rE .ck { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--shade-4); display: grid; place-items: center; }
+.rE .ck svg { width: 12px; height: 12px; display: none; }
+.rE .mine .ck { background: var(--ink); border-color: var(--ink); color: var(--on-ink); } .rE .mine .ck svg { display: block; }
+.rE .lab { font-size: 15px; font-weight: 500; } .rE .mine .lab { font-weight: 700; }
+.rE .bar2 { grid-column: 2 / 4; height: 2px; }
+
+
+/* La 2, sans barre avant le vote */
+.bv { display: flex; flex-direction: column; gap: 6px; }
+.bv button { display: grid; grid-template-columns: 1fr auto; column-gap: 12px; align-items: baseline; padding: 8px 0; text-align: left; width: 100%; }
+.bv .lab { font-size: 15.5px; font-weight: 500; transition: color 240ms; }
+.bv .mine .lab { font-weight: 700; }
+.voted .bv button:not(.mine) .lab { color: var(--ink-2); }
+.bv .pc { font-size: 13px; font-weight: 700; opacity: 0; transition: opacity 240ms 200ms; }
+.voted .bv .pc { opacity: 1; }
+.bv .rail { grid-column: 1 / 3; height: 0; margin-top: 0; border-radius: 4px; background: transparent; position: relative; overflow: hidden; transition: height 200ms, margin-top 200ms, background 300ms; }
+.voted .bv .rail { height: 4px; margin-top: 8px; background: var(--chip); }
+.bv .rail i { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 4px; background: var(--shade-3); transition: width 620ms cubic-bezier(.2,.8,.2,1) 120ms; }
+.bv .mine .rail i { background: var(--ink); }
+.b2 .rail i { transition-delay: calc(120ms + var(--n) * 110ms); }
+.b2 .pc { transition-delay: calc(200ms + var(--n) * 110ms); }
+.b3 .rail { overflow: visible; }
+.voted .b3 .rail { background: transparent; }
+.b3 .rail i { transition: width 700ms cubic-bezier(.2,.8,.2,1); }
+.b3 .rail i.nt { transition: none; }
+.voted .b4 .rail { background: transparent; }
+.b4 .pc { opacity: 1; font-variant-numeric: tabular-nums; }
+.b4 button .pc { visibility: hidden; } .voted .b4 button .pc { visibility: visible; }
+.b4 .rail i { transition-duration: 900ms; transition-delay: 0ms; }
+.b5 .rail i { transition-delay: 520ms; }
+.b5 .mine .rail i { transition-delay: 80ms; }
+.b5 .pc { transition-delay: 700ms; } .b5 .mine .pc { transition-delay: 200ms; }
+
+
+/* Séparer les réponses, révélation en cascade */
+.sv { display: flex; flex-direction: column; }
+.sv button { position: relative; display: grid; grid-template-columns: 1fr auto auto; column-gap: 10px; align-items: center; text-align: left; width: 100%; }
+.sv .lab { font-size: 15.5px; font-weight: 500; transition: color 240ms; grid-column: 1; }
+.sv .mine .lab { font-weight: 700; }
+.voted .sv button:not(.mine) .lab { color: var(--ink-2); }
+.sv .pc { grid-column: 2; font-size: 13px; font-weight: 700; opacity: 0; transition: opacity 240ms calc(200ms + var(--n) * 110ms); }
+.voted .sv .pc { opacity: 1; }
+.sv .lead, .sv .tail { display: none; }
+.sv .rail { grid-column: 1 / -1; height: 0; border-radius: 4px; background: transparent; position: relative; overflow: hidden; transition: height 200ms, margin-top 200ms, background 300ms; }
+.voted .sv .rail { height: 4px; margin-top: 8px; background: var(--chip); }
+.sv .rail i { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 4px; background: var(--shade-3); transition: width 620ms cubic-bezier(.2,.8,.2,1) calc(120ms + var(--n) * 110ms); }
+.sv .mine .rail i { background: var(--ink); }
+
+/* 1 filet */
+.s1 button { padding: 12px 0; border-top: 1px solid var(--line); }
+.s1 button:first-child { border-top: 0; padding-top: 4px; }
+.s1 button:last-child { padding-bottom: 4px; }
+
+/* 2 verre */
+.glassbed { position: relative; border-radius: 18px; padding: 8px; background:
+  radial-gradient(120% 90% at 0% 0%, rgba(124,92,255,.16), transparent 60%),
+  radial-gradient(120% 90% at 100% 100%, rgba(224,122,63,.16), transparent 60%), var(--chip); }
+.s2 { gap: 6px; }
+.s2 button { padding: 12px 14px; border-radius: 14px; background: var(--glass); -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
+  box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1px var(--glass-edge), 0 1px 2px rgba(20,24,40,.06); }
+.s2 .mine { background: var(--glass-mine); box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 0 1.5px var(--ink), 0 2px 8px rgba(20,24,40,.08); }
+.voted .s2 .rail { background: var(--fill); }
+
+/* 3 détouré */
+.s3 { gap: 8px; }
+.s3 button { padding: 12px 14px; border-radius: 14px; box-shadow: inset 0 0 0 1px var(--line); transition: box-shadow 200ms; }
+.s3 .mine { box-shadow: inset 0 0 0 1.5px var(--ink); }
+
+/* 4 mini ligne */
+.s4 { gap: 4px; }
+.s4 button { padding: 8px 0 10px; }
+.s4 .rail { height: 2px; margin-top: 6px; background: transparent; overflow: visible; }
+.s4 .rail::before { content: ''; position: absolute; left: 0; top: 0; width: 18px; height: 2px; border-radius: 2px; background: var(--shade-4); transition: opacity 200ms; }
+.voted .s4 .rail::before { opacity: 0; }
+.voted .s4 .rail { height: 4px; margin-top: 6px; }
+
+/* 5 voile gris */
+.s5 { gap: 6px; }
+.s5 button { padding: 12px 14px; border-radius: 12px; background: var(--ground); }
+.s5 .mine { background: var(--chip); }
+
+/* 6 lettre */
+.s6 { gap: 2px; }
+.s6 button { padding: 10px 0; }
+.s6 .lead { display: grid; place-items: center; grid-column: 1; width: 22px; height: 22px; border-radius: 7px; background: var(--chip); color: var(--ink-3); font-size: 11.5px; font-weight: 800; }
+.s6 .mine .lead { background: var(--ink); color: var(--on-ink); }
+.s6 button { grid-template-columns: auto 1fr auto; }
+.s6 .lab { grid-column: 2; } .s6 .pc { grid-column: 3; }
+.s6 .rail { grid-column: 2 / -1; }
+
+/* 7 cellules iOS */
+.s7 { border-radius: 14px; background: var(--ground); overflow: hidden; }
+.s7 button { padding: 12px 14px; }
+.s7 button + button::before { content: ''; position: absolute; top: 0; left: 14px; right: 0; height: 1px; background: var(--line); }
+.s7 .tail { display: block; grid-column: 3; color: var(--ink-3); width: 8px; height: 8px; border-right: 2px solid currentColor; border-top: 2px solid currentColor; transform: rotate(45deg); margin-right: 2px; transition: opacity 200ms; }
+.voted .s7 .tail { opacity: 0; width: 0; margin: 0; border-width: 0; }
+.voted .s7 .rail { background: var(--fill); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head><body>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>La cascade, réponses séparées</h1>
+      <p>La 2 (cascade) garde son animation au vote. Ici, sept façons de séparer les réponses avant de voter : filet, verre, contour, mini ligne, voile gris, lettre, cellules. Touche une réponse, touche-la encore pour rejouer.</p>
+    </div>
+    <button class="reset" id="reset" type="button">Tout remettre à zéro</button>
+  </header>
+  <main class="grid" id="grid"></main>
+</div>
+
+<script>
+const ICON = {
+  chat: '<svg viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><path d="M79.93,211.11a96,96,0,1,0-35-35h0L32.42,213.46a8,8,0,0,0,10.12,10.12l37.39-12.47Z"/></svg>',
+  repost: '<svg viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><path d="M24,128A72.08,72.08,0,0,1,96,56H232"/><polyline points="200 24 232 56 200 88"/><path d="M232,128a72.08,72.08,0,0,1-72,72H24"/><polyline points="56 232 24 200 56 168"/></svg>',
+  send: '<svg viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><path d="M223.87,114l-168-95.89A16,16,0,0,0,33.08,37.34L64,128,33.08,218.67A16,16,0,0,0,56,238l168-96.08A15.94,15.94,0,0,0,223.87,114Z"/><line x1="64" y1="128" x2="136" y2="128"/></svg>',
+  ghost: '<svg viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><circle cx="100" cy="116" r="4" fill="currentColor"/><circle cx="156" cy="116" r="4" fill="currentColor"/><path d="M224,224l-32-24-32,24-32-24L96,224,64,200,32,224V120a96,96,0,0,1,192,0Z"/></svg>',
+  check: '<svg class="check" viewBox="0 0 256 256" fill="none" stroke="currentColor" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"><polyline points="40 144 96 200 224 72"/></svg>',
+}
+const SHADES = ['var(--shade-1)', 'var(--shade-2)', 'var(--shade-3)', 'var(--shade-4)', 'var(--shade-5)']
+
+const TAKES = [
+  { kind: "s1", label: "Filet fin", note: "un trait d’un pixel entre chaque réponse", author: "Inès M.", face: "#7C5CFF", when: "2 h",
+    q: "Le meilleur moment pour réviser ?", opts: [["Le matin", 412], ["L’après-midi", 158], ["Le soir", 326], ["La nuit", 214]] },
+  { kind: "s2", label: "Verre", note: "chaque réponse dans une pastille vitrée", author: "Yanis B.", face: "#E07A3F", when: "35 min",
+    q: "Ton réseau le plus ouvert en ce moment ?", opts: [["TikTok", 640], ["Insta", 402], ["Snap", 351], ["YouTube", 188]] },
+  { kind: "s3", label: "Détouré", note: "un contour fin autour de chaque réponse", author: "Nora T.", face: "#5B6C8F", when: "6 h",
+    q: "Tu écoutes ta musique comment ?", opts: [["Spotify", 702], ["Apple Music", 233], ["YouTube", 318], ["Deezer", 96]] },
+  { kind: "s4", label: "Mini ligne", note: "un petit trait sous le mot, qui devient la barre", author: "Adrien L.", face: "#2E8B57", when: "1 h",
+    q: "La meilleure saga ?", opts: [["Harry Potter", 390], ["Star Wars", 212], ["Le Seigneur des anneaux", 268], ["Marvel", 344]] },
+  { kind: "s5", label: "Voile gris", note: "un fond à peine gris par réponse", author: "Clara H.", face: "#9B4F6B", when: "5 h",
+    q: "Tu préfères réviser seul ou en groupe ?", opts: [["Seul", 488], ["À deux", 233], ["En groupe", 190], ["Je ne révise pas", 144]] },
+  { kind: "s6", label: "Lettre discrète", note: "A B C D en gris devant chaque réponse", author: "Sacha D.", face: "#8A6D3B", when: "3 h",
+    q: "Le meilleur fast-food ?", opts: [["Burger", 380], ["Tacos", 455], ["Pizza", 290], ["Sushi", 175]] },
+  { kind: "s7", label: "Cellules iOS", note: "un filet décalé et une flèche, comme les Réglages", author: "Léa P.", face: "#C8487A", when: "20 min",
+    q: "Tu pars où cet été ?", opts: [["Mer", 520], ["Montagne", 144], ["Ville", 233], ["Nulle part", 301]] },
+]
+
+const state = TAKES.map(() => null)
+const ex = TAKES.map(() => ({}))
+const PERSON = '<svg viewBox="0 0 256 256" fill="currentColor"><circle cx="128" cy="72" r="48"/><path d="M40 224c0-52 40-88 88-88s88 36 88 88z"/></svg>'
+
+function shares(take, mine) {
+  const mineSet = Array.isArray(mine) ? mine : [mine]
+  const votes = take.opts.map(([, v], i) => v + (mineSet.includes(i) ? 1 : 0))
+  const total = votes.reduce((a, b) => a + b, 0)
+  const raw = votes.map((v) => (v / total) * 100)
+  const pct = raw.map(Math.floor)
+  let rest = 100 - pct.reduce((a, b) => a + b, 0)
+  raw.map((r, i) => [r - Math.floor(r), i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (rest-- > 0) pct[i]++ })
+  return { pct, total }
+}
+const fmt = (n) => n.toLocaleString('fr-FR')
+
+function results(take, pct, mineSet) {
+  return `<div class="res">${take.opts.map(([t], k) => `<div class="${mineSet.includes(k) ? 'mine' : ''}"><i data-w="${pct[k]}%"></i>${mineSet.includes(k) ? ICON.check : ''}<span>${t}</span><b>${pct[k]}&nbsp;%</b></div>`).join('')}</div>`
+}
+function question(take, i) {
+  const q = take.q.replace(/ ([?!:;»])/g, '\u00a0$1').replace(/« /g, '«\u00a0')
+  if (take.kind !== 'phrase') return `<p class="q">${q}</p>`
+  const mine = state[i]
+  return `<p class="sentence">${q.replace('___', `<span class="blank">${mine === null ? '…' : take.opts[mine][0]}</span>`)}</p>`
+}
+function body(take, i) {
+  const mine = state[i]
+  const voted = mine !== null
+  const { pct } = shares(take, mine)
+  const p = (k) => (voted ? pct[k] : 0)
+  const btn = (k, cls, inner) => `<button type="button" data-i="${i}" data-k="${k}" class="${cls}${mine === k ? ' mine' : ''}" aria-pressed="${mine === k}">${inner}</button>`
+  switch (take.kind) {
+    case 'list':
+      return `<div class="list">${take.opts.map(([t], k) => btn(k, 'opt', `<span class="fill" data-w="${p(k)}%"></span>${mine === k ? ICON.check : ''}<span>${t}</span><span class="pct">${p(k)}&nbsp;%</span>`)).join('')}</div>`
+    case 'chips':
+      return `<div class="chips">${take.opts.map(([t], k) => btn(k, 'chipo', `<span class="fill" data-w="${p(k)}%"></span><span>${t}</span><span class="pct">${p(k)}&nbsp;%</span>`)).join('')}</div>`
+    case 'letters':
+      return `<div class="letters">${take.opts.map(([t], k) => btn(k, 'lt', `<span class="fill" data-h="${p(k)}%"></span><span class="l">${'ABCD'[k]}</span><span class="pct">${p(k)}&nbsp;%</span><span class="t">${t}</span>`)).join('')}</div>`
+    case 'hist': {
+      const max = Math.max(...pct)
+      return `<div class="hist">${take.opts.map(([t], k) => btn(k, 'col', `<span class="pct">${p(k)}&nbsp;%</span><span class="bar"><i data-h="${voted ? (pct[k] / max) * 100 : 0}%"></i></span><span class="t">${t}</span>`)).join('')}</div>`
+    }
+    case 'stack':
+      return `<div class="stack-opts">${take.opts.map(([t], k) => btn(k, '', `<span class="sw" style="background:${SHADES[k]}"></span><span>${t}</span><span class="pct">${p(k)}&nbsp;%</span>`)).join('')}</div>
+        <div class="stackbar" aria-hidden="true">${take.opts.map((_, k) => `<i data-w="${p(k)}%" style="background:${SHADES[k]}"></i>`).join('')}</div>`
+    case 'bubbles': {
+      return `<div class="bubbles">${take.opts.map(([t], k) => {
+        const d = voted ? 38 + pct[k] * 1.6 : 72
+        return btn(k, 'bub', `<span>${t}${voted ? `<span class="pct">${pct[k]}&nbsp;%</span>` : ''}</span>`).replace('class="bub', `style="width:72px;height:72px" data-w="${d}px" data-h="${d}px" class="bub`)
+      }).join('')}</div>`
+    }
+    case 'ring': {
+      const r = 52, c = 2 * Math.PI * r
+      let acc = 0
+      const arcs = take.opts.map((_, k) => {
+        const len = (p(k) / 100) * c
+        const gap = voted ? 2 : 0
+        const seg = `<circle cx="66" cy="66" r="${r}" fill="none" stroke="${SHADES[k]}" stroke-width="${mine === k ? 16 : 12}" stroke-dasharray="0 ${c}" data-dash="${Math.max(len - gap, 0)} ${c}" stroke-dashoffset="${-acc}" transform="rotate(-90 66 66)" style="transition:stroke-dasharray 600ms cubic-bezier(.2,.8,.2,1)"/>`
+        acc += len
+        return seg
+      }).join('')
+      const lead = voted ? pct.indexOf(Math.max(...pct)) : -1
+      return `<div class="ring"><svg viewBox="0 0 132 132" aria-hidden="true"><circle cx="66" cy="66" r="${r}" fill="none" stroke="var(--chip)" stroke-width="12"/>${arcs}
+        <text x="66" y="66" text-anchor="middle" class="centre">${voted ? pct[lead] + '\u00a0%' : '?'}</text><text x="66" y="84" text-anchor="middle" class="sub">${voted ? take.opts[lead][0].toUpperCase() : 'VOTE'}</text></svg>
+        <div class="legend">${take.opts.map(([t], k) => btn(k, '', `<span class="sw" style="background:${SHADES[k]}"></span><span>${t}</span><span class="pct">${p(k)}&nbsp;%</span>`)).join('')}</div></div>`
+    }
+    case 'rank': {
+      const order = take.opts.map((_, k) => k)
+      if (voted) order.sort((a, b) => pct[b] - pct[a])
+      const pos = order.reduce((m, k, idx) => ((m[k] = idx), m), {})
+      return `<div class="rank">${take.opts.map(([t], k) => btn(k, `rk${voted && pos[k] === 0 ? ' first' : ''}`, `<span class="fill" data-w="${p(k)}%"></span><span class="n">${voted ? pos[k] + 1 : '·'}</span><span>${t}</span><span class="pct">${p(k)}&nbsp;%</span>`).replace('class="rk', `data-tf="translateY(${(pos[k] - k) * 50}px)" class="rk`)).join('')}</div>`
+    }
+    case 'seg':
+      return `<div class="seg">${take.opts.map(([t], k) => btn(k, '', `<span class="fill" data-h="${p(k)}%"></span><span class="t">${t}</span><b>${p(k)}&nbsp;%</b>`)).join('')}</div>`
+    case 's1': case 's2': case 's3': case 's4': case 's5': case 's6': case 's7': {
+      const rows = take.opts.map(([t], k) => btn(k, '', `<span class="lead">${'ABCD'[k]}</span><span class="lab">${t}</span><span class="pc">${p(k)}&nbsp;%</span><span class="tail"></span><span class="rail"><i ${voted ? `data-w="${p(k)}%"` : ''}></i></span>`).replace('<button ', `<button style="--n:${k}" `)).join('')
+      const list = `<div class="sv ${take.kind}">${rows}</div>`
+      return take.kind === 's2' ? `<div class="glassbed">${list}</div>` : list
+    }
+    case 'b1': case 'b2': case 'b3': case 'b4': case 'b5':
+      return `<div class="bv ${take.kind}">${take.opts.map(([t], k) => btn(k, '', `<span class="lab">${t}</span><span class="pc" data-count="${p(k)}">${take.kind === 'b4' ? 0 : p(k)}&nbsp;%</span><span class="rail"><i ${voted ? `data-w="${p(k)}%"` : ''} ${take.kind === 'b3' && voted ? 'data-from="label"' : ''}></i></span>`).replace('<button ', `<button style="--n:${k}" `)).join('')}</div>`
+    case 'rA':
+      return `<div class="radio">${take.opts.map(([t], k) => btn(k, '', `<span class="rb"></span><span>${t}</span><b>${p(k)}&nbsp;%</b><span class="ln"><i data-w="${p(k)}%"></i></span>`)).join('')}</div>`
+    case 'rB':
+      return `<div class="rv rB">${take.opts.map(([t], k) => btn(k, '', `<span class="lab">${t}</span><span class="pc">${p(k)}&nbsp;%</span><span class="bar2"><i data-w="${p(k)}%"></i></span>`)).join('')}</div>`
+    case 'rC':
+      return `<div class="rv rC">${take.opts.map(([t], k) => btn(k, '', `<span class="lab"><span class="dot"></span>${t}</span><span class="track"><span class="bar2" data-w="${voted ? Math.max(p(k) * 2.4, 4) + 'px' : '0px'}"><i></i></span><span class="empty"></span><span class="pc">${p(k)}&nbsp;%</span></span>`)).join('')}</div>`
+    case 'rD':
+      return `<div class="rv rD">${take.opts.map(([t], k) => btn(k, '', `<span class="pc">${voted ? p(k) + '&nbsp;%' : '—'}</span><span class="lab">${t}</span><span></span><span class="bar2"><i data-w="${p(k)}%"></i></span>`)).join('')}</div>`
+    case 'rE':
+      return `<div class="rv rE">${take.opts.map(([t], k) => btn(k, '', `<span class="ck">${ICON.check.replace('class="check" ', '')}</span><span class="lab">${t}</span><span class="pc">${p(k)}&nbsp;%</span><span></span><span class="bar2"><i data-w="${p(k)}%"></i></span>`)).join('')}</div>`
+    case 'pile': {
+      if (voted) return results(take, pct, [mine])
+      const n = take.opts.length, at = ex[i].at ?? 0
+      return `<div class="pile"><div class="card under2"></div><div class="card under"></div><div class="card"><small>${at + 1} / ${n}</small>${take.opts[at][0]}</div></div>
+        <div class="pilebar"><button type="button" class="ghostbtn" data-i="${i}" data-act="prev" aria-label="Précédente">‹</button><button type="button" class="ghostbtn" data-i="${i}" data-act="next" aria-label="Suivante">›</button><button type="button" class="cta" data-i="${i}" data-k="${at}">Choisir</button></div>`
+    }
+    case 'caro':
+      return `<div class="caro">${take.opts.map(([t], k) => btn(k, '', `<span class="fill" data-h="${p(k)}%"></span><span class="big">${k + 1}</span><span class="t">${t}</span><span class="pct">${p(k)}&nbsp;%</span>`)).join('')}</div>`
+    case 'g3':
+      return `<div class="g3">${take.opts.map(([t], k) => btn(k, '', `<span class="fill" data-h="${p(k)}%"></span><span class="mono">${take.mono[k]}</span><span class="t">${t}</span><span class="pct">${p(k)}&nbsp;%</span>`)).join('')}</div>`
+    case 'gauge': {
+      let acc = 0
+      const arcs = take.opts.map((_, k) => { const len = p(k); const seg = `<path d="M20 120 A100 100 0 0 1 220 120" pathLength="100" fill="none" stroke="${mine === k ? 'var(--ink)' : SHADES[Math.min(k + 1, 4)]}" stroke-width="${mine === k ? 22 : 18}" stroke-dasharray="0 100" data-dash="${Math.max(len - (voted ? 0.8 : 0), 0)} 100" stroke-dashoffset="${-acc}" style="transition:stroke-dasharray 600ms cubic-bezier(.2,.8,.2,1)"/>`; acc += len; return seg }).join('')
+      const lead = voted ? pct.indexOf(Math.max(...pct)) : -1
+      return `<div class="gauge"><svg viewBox="0 0 240 132" aria-hidden="true"><path d="M20 120 A100 100 0 0 1 220 120" fill="none" stroke="var(--chip)" stroke-width="18"/>${arcs}<text x="120" y="104" text-anchor="middle" class="lead">${voted ? pct[lead] + '\u00a0%' : '?'}</text><text x="120" y="122" text-anchor="middle" class="leadt">${voted ? take.opts[lead][0].toUpperCase() : 'À TOI'}</text></svg>
+        <div class="gsteps">${take.opts.map(([t], k) => btn(k, '', `<span>${t}</span><b>${p(k)}&nbsp;%</b>`)).join('')}</div></div>`
+    }
+    case 'ladder':
+      return `<div class="ladder">${take.opts.map(([t], k) => btn(k, '', `<span class="dot"></span><span>${t}</span><span class="ln"><i data-w="${p(k)}%"></i></span><b>${p(k)}&nbsp;%</b>`)).join('')}</div>`
+    case 'duel': {
+      if (voted) return `<p class="sub-note">Ton gagnant : <b>${take.opts[mine][0]}</b></p>` + results(take, pct, [mine])
+      const d = ex[i].a === undefined ? (ex[i] = { a: 0, b: 1, next: 2 }) : ex[i]
+      const rounds = take.opts.length - 1, done = d.next - 2
+      return `<div class="round">${Array.from({ length: rounds }, (_, r) => `<i class="${r <= done ? 'on' : ''}"></i>`).join('')}<span class="sub-note" style="margin-left:6px">Manche ${done + 1} sur ${rounds}</span></div>
+        <div class="duel"><button type="button" data-i="${i}" data-act="pick" data-k="${d.a}">${take.opts[d.a][0]}</button><span class="ou">ou</span><button type="button" data-i="${i}" data-act="pick" data-k="${d.b}">${take.opts[d.b][0]}</button></div>`
+    }
+    case 'waffle': {
+      const owner = []
+      if (voted) pct.forEach((v, k) => { for (let j = 0; j < v; j++) owner.push(k) })
+      return `<div class="waffle" aria-hidden="true">${Array.from({ length: 100 }, (_, j) => `<i ${voted ? `data-bg="${mine === owner[j] ? 'var(--ink)' : SHADES[Math.min(owner[j] + 1, 4)]}" style="transition-delay:${j * 6}ms"` : ''}></i>`).join('')}</div>
+        <div class="wlegend">${take.opts.map(([t], k) => btn(k, '', `<span class="sw" style="background:${voted ? (mine === k ? 'var(--ink)' : SHADES[Math.min(k + 1, 4)]) : 'var(--shade-4)'}"></span><span>${t}</span><b>${p(k)}&nbsp;%</b>`)).join('')}</div>`
+    }
+    case 'phrase':
+      return `<div class="words">${take.opts.map(([t], k) => btn(k, '', `<span>${t}</span><b>${p(k)}&nbsp;%</b>`)).join('')}</div>`
+    case 'bign':
+      return `<div class="bign">${take.opts.map(([t], k) => btn(k, '', `<span class="n">${voted ? pct[k] + '%' : '—'}</span><span class="t">${t}</span>`)).join('')}</div>`
+    case 'mosaic':
+      return `<div class="mosaic">${take.opts.map(([t], k) => btn(k, '', `<b>${p(k)}&nbsp;%</b><span class="t">${t}</span>`).replace('<button ', `<button ${voted ? `data-fg="${Math.max(pct[k], 6)}"` : ''} `)).join('')}</div>`
+    case 'radio':
+      return `<div class="radio">${take.opts.map(([t], k) => btn(k, '', `<span class="rb"></span><span>${t}</span><b>${p(k)}&nbsp;%</b><span class="ln"><i data-w="${p(k)}%"></i></span>`)).join('')}</div>`
+    case 'ppl':
+      return `<div class="ppl">${take.opts.map(([t], k) => btn(k, '', `<span class="top"><span>${t}</span><b>${p(k)}&nbsp;%</b></span><span class="men">${Array.from({ length: 10 }, (_, j) => PERSON.replace('<svg ', `<svg ${voted && j < Math.round(pct[k] / 10) ? 'data-cls="on"' : ''} style="transition-delay:${j * 40}ms" `)).join('')}</span>`)).join('')}<p class="sub-note" style="margin:2px 0 0">${voted ? 'Chaque silhouette pleine = 1 personne sur 10.' : ''}</p></div>`
+    case 'wheel':
+      if (voted) return results(take, pct, [mine])
+      return `<div class="wheelbox"><div class="wheel" id="wheel${i}">${take.opts.map(([t]) => `<div>${t}</div>`).join('')}</div><span class="band"></span></div>
+        <button type="button" class="cta" data-i="${i}" data-act="wheel">Valider</button>`
+    case 'friends':
+      return `<div class="fr">${take.opts.map(([t], k) => {
+        const fs = take.friends[k]
+        const names = fs.map((f) => f[0]).join(', ')
+        return btn(k, '', `<span class="fill" data-w="${p(k)}%"></span><span class="top"><span>${t}</span><b>${p(k)}&nbsp;%</b></span><span class="faces">${fs.map(([n, c]) => `<span style="background:${c}">${n[0]}</span>`).join('')}${mine === k ? `<span style="background:var(--ink);color:var(--on-ink)">T</span>` : ''}<em>${mine === k ? 'Toi, ' : ''}${names}</em></span>`)
+      }).join('')}</div>`
+    case 'podium': {
+      if (!voted) return `<div class="list">${take.opts.map(([t], k) => btn(k, 'opt', `<span class="fill"></span><span>${t}</span>`)).join('')}</div>`
+      const order = take.opts.map((_, k) => k).sort((a, b) => pct[b] - pct[a])
+      const steps = [[order[1], 2, 96], [order[0], 1, 128], [order[2], 3, 72]]
+      return `<div class="podium">${steps.map(([k, place, h]) => `<div class="${place === 1 ? 'first' : ''}${mine === k ? ' mine' : ''}"><span class="t">${take.opts[k][0]}</span><span class="p">${pct[k]}&nbsp;%</span><span class="b" data-h="${h}px">${place}</span></div>`).join('')}</div>
+        <p class="sub-note" style="margin:0">${order.slice(3).map((k, j) => `${j + 4}. ${take.opts[k][0]} · ${pct[k]}&nbsp;%${mine === k ? ' (toi)' : ''}`).join(' · ')}</p>`
+    }
+    case 'multi': {
+      if (voted) return results(take, pct, mine) + `<p class="sub-note" style="margin:0">Plusieurs réponses possibles : le total dépasse 100&nbsp;%.</p>`
+      const on = ex[i].on ?? []
+      return `<div class="multi">${take.opts.map(([t], k) => `<button type="button" data-i="${i}" data-act="toggle" data-k="${k}" class="${on.includes(k) ? 'on' : ''}" aria-pressed="${on.includes(k)}"><span class="box">${ICON.check.replace('class="check" ', '')}</span><span>${t}</span></button>`).join('')}</div>
+        <button type="button" class="cta" data-i="${i}" data-act="submit" ${on.length ? '' : 'disabled'}>Valider${on.length ? ` (${on.length})` : ''}</button>`
+    }
+    case 'order': {
+      const seq = ex[i].seq ?? []
+      if (voted) {
+        const crowd = take.opts.map((_, k) => k).sort((a, b) => take.opts[b][1] - take.opts[a][1])
+        return `<div class="cmp"><div><h4>TON ORDRE</h4><ol>${seq.map((k, j) => `<li class="${crowd[j] === k ? 'same' : ''}"><span>${j + 1}</span>${take.opts[k][0]}</li>`).join('')}</ol></div>
+          <div><h4>LES AUTRES</h4><ol>${crowd.map((k, j) => `<li class="${seq[j] === k ? 'same' : ''}"><span>${j + 1}</span>${take.opts[k][0]}</li>`).join('')}</ol></div></div>
+          <p class="sub-note" style="margin:0">${((c) => (c === 0 ? 'Aucune place en commun avec les autres.' : c === 1 ? 'Une place en commun avec les autres.' : `${c} places en commun avec les autres.`))(seq.filter((k, j) => crowd[j] === k).length)}</p>`
+      }
+      return `<div class="order">${take.opts.map(([t], k) => { const at = seq.indexOf(k); return `<button type="button" data-i="${i}" data-act="rank" data-k="${k}" class="${at >= 0 ? 'on' : ''}"><span class="n">${at >= 0 ? at + 1 : ''}</span><span>${t}</span></button>` }).join('')}</div>`
+    }
+    case 'ruler': {
+      if (voted) return results(take, pct, [mine])
+      const cur = ex[i].v ?? 2
+      return `<div class="ruler"><input type="range" id="ruler${i}" min="0" max="${take.opts.length - 1}" step="1" value="${cur}" data-i="${i}" aria-label="Ta réponse">
+        <div class="ticks">${take.opts.map(([t], k) => `<span class="${k === cur ? 'cur' : ''}">${t}</span>`).join('')}</div>
+        <button type="button" class="cta" data-i="${i}" data-act="ruler">Valider ${take.opts[cur][0]}</button></div>`
+    }
+    case 'chrono': {
+      if (voted || ex[i].late) return (ex[i].late && !voted ? `<p class="sub-note" style="margin:0">Temps écoulé. Voici ce qu’ont dit les autres.</p>` : '') + results(take, pct, voted ? [mine] : [])
+      const run = ex[i].run
+      return `<div class="clock${run ? ' run' : ''}"><i></i></div>
+        <div class="chrono-opts" aria-disabled="${!run}">${take.opts.map(([t], k) => btn(k, '', t)).join('')}</div>
+        ${run ? '' : `<button type="button" class="cta" data-i="${i}" data-act="go">Lancer les 10 secondes</button>`}`
+    }
+    case 'flip':
+      return `<div class="flips">${take.opts.map(([t], k) => btn(k, '', `<span class="in" ${voted ? 'data-cls="flipped"' : ''} style="transition-delay:${k * 90}ms"><span class="f">${t}</span><span class="bk"><b>${pct[k]}&nbsp;%</b><span>${t}</span></span></span>`)).join('')}</div>`
+    case 'track': {
+      const max = Math.max(...pct)
+      return `<div class="track"><div class="bars" aria-hidden="true">${take.opts.map((_, k) => `<div class="stop${mine === k ? ' mine' : ''}"><span class="pct">${p(k)}&nbsp;%</span><span class="bar" data-h="${voted ? (pct[k] / max) * 44 : 0}px"></span></div>`).join('')}</div>
+        <div class="rail"></div><div class="stops">${take.opts.map(([t], k) => btn(k, 'stop', `<span class="dot"></span><span class="t">${t}</span>`)).join('')}</div></div>`
+    }
+  }
+}
+
+function fit() {}
+function card(take, i) {
+  const mine = state[i]
+  const { total } = shares(take, mine)
+  return `<div class="cell"><section class="slot">
+    <div class="tag"><b>${String(i + 1).padStart(2, '0')}</b><span>${take.label}</span><em>${take.note}</em></div>
+    <article class="row${mine !== null ? ' voted' : ''}" id="t${i}">
+      <div class="by"><span class="face" style="background:${take.face}">${take.author[0]}</span><span class="name">${take.author}</span><span class="when">· ${take.when}</span><span class="dots">···</span></div>
+      ${question(take, i)}
+      ${body(take, i)}
+      <div class="foot">${ICON.chat}${ICON.repost}${ICON.send}${ICON.ghost}<span class="count">${fmt(total)} votes</span></div>
+    </article>
+  </section></div>`
+}
+
+const grid = document.getElementById('grid')
+function render(i) {
+  if (i === undefined) grid.innerHTML = TAKES.map(card).join('')
+  else document.getElementById('t' + i).closest('.cell').outerHTML = card(TAKES[i], i)
+  fit()
+}
+function apply(root) {
+  root.querySelectorAll('[data-from="label"]').forEach((el) => {
+    el.classList.add('nt')
+    el.style.width = el.closest('button').querySelector('.lab').offsetWidth + 'px'
+  })
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    root.querySelectorAll('.nt').forEach((el) => el.classList.remove('nt'))
+    root.querySelectorAll('.voted .b4 [data-count]').forEach((el) => {
+      const to = +el.dataset.count, t0 = performance.now()
+      const step = (now) => { const f = Math.min(1, (now - t0) / 900); el.innerHTML = Math.round(to * (1 - Math.pow(1 - f, 3))) + '&nbsp;%'; if (f < 1) requestAnimationFrame(step) }
+      requestAnimationFrame(step)
+    })
+    root.querySelectorAll('[data-w]').forEach((el) => (el.style.width = el.dataset.w))
+    root.querySelectorAll('[data-h]').forEach((el) => (el.style.height = el.dataset.h))
+    root.querySelectorAll('[data-tf]').forEach((el) => (el.style.transform = el.dataset.tf))
+    root.querySelectorAll('[data-dash]').forEach((el) => el.setAttribute('stroke-dasharray', el.dataset.dash))
+    root.querySelectorAll('[data-fg]').forEach((el) => (el.style.flexGrow = el.dataset.fg))
+    root.querySelectorAll('[data-bg]').forEach((el) => (el.style.background = el.dataset.bg))
+    root.querySelectorAll('[data-cls]').forEach((el) => el.classList.add(el.dataset.cls))
+  }))
+}
+grid.addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-i]')
+  if (!b || b.disabled) return
+  const i = +b.dataset.i, k = +b.dataset.k, act = b.dataset.act
+  const take = TAKES[i], x = ex[i], n = take.opts.length
+  if (act === 'prev' || act === 'next') { x.at = ((x.at ?? 0) + (act === 'next' ? 1 : n - 1)) % n; render(i); return }
+  if (act === 'pick') {
+    if (x.next >= n) state[i] = k
+    else { x.a = k; x.b = x.next; x.next += 1 }
+  } else if (act === 'toggle') { const on = new Set(x.on ?? []); on.has(k) ? on.delete(k) : on.add(k); x.on = [...on] }
+  else if (act === 'submit') state[i] = x.on
+  else if (act === 'rank') {
+    const seq = x.seq ?? []; const at = seq.indexOf(k)
+    x.seq = at >= 0 ? seq.slice(0, at) : [...seq, k]
+    if (x.seq.length === n) state[i] = x.seq[0]
+  } else if (act === 'wheel') { const w = document.getElementById('wheel' + i); state[i] = Math.min(n - 1, Math.max(0, Math.round(w.scrollTop / 44))) }
+  else if (act === 'ruler') state[i] = x.v ?? 2
+  else if (act === 'go') { x.run = true; clearTimeout(x.timer); x.timer = setTimeout(() => { if (state[i] === null) { x.late = true; render(i); apply(document.getElementById('t' + i)) } }, 10000) }
+  else {
+    if (take.kind === 'chrono') clearTimeout(x.timer)
+    state[i] = state[i] === k ? null : k
+    if (state[i] === null) ex[i] = {}
+  }
+  render(i)
+  apply(document.getElementById('t' + i))
+})
+grid.addEventListener('input', (e) => {
+  const r = e.target.closest('input[type=range][data-i]')
+  if (!r) return
+  const i = +r.dataset.i
+  ex[i].v = +r.value
+  const card = document.getElementById('t' + i)
+  card.querySelectorAll('.ticks span').forEach((s, k) => s.classList.toggle('cur', k === ex[i].v))
+  card.querySelector('[data-act="ruler"]').textContent = 'Valider ' + TAKES[i].opts[ex[i].v][0]
+})
+document.getElementById('reset').addEventListener('click', () => { ex.forEach((x) => clearTimeout(x.timer)); state.fill(null); ex.forEach((_, j) => (ex[j] = {})); render(); apply(grid) })
+render()
+apply(grid)
+</script>
+</body></html>
