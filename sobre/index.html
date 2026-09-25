@@ -60,6 +60,8 @@
   .tg svg { width: 20px; height: 20px; overflow: visible; }
   .anon .tg { color: var(--ink); }
   .ln { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .gp { fill: transparent; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; transition: fill .25s ease; }
+  .anon .tg .gp { fill: currentColor; }
   .slash { stroke-dasharray: 24; stroke-dashoffset: 24; transition: stroke-dashoffset .35s ease; }
   .anon .slash { stroke-dashoffset: 0; }
   .shackle { transform: translateY(-3px); transition: transform .3s cubic-bezier(.3,1.4,.5,1); }
@@ -76,7 +78,7 @@
   .cap { font-size: 13px; color: var(--muted); max-height: 0; opacity: 0; overflow: hidden; margin-top: -12px; transition: max-height .3s, opacity .3s, margin .3s; }
   .d1.anon.voted .cap { max-height: 40px; opacity: 1; margin-top: 0; }
 
-  /* 2 — Œil barré */
+  /* 2 — Fantôme dans le bouton */
   .d2.anon.voted .btn.on .mini { width: 15px; opacity: 1; }
 
   /* 3 — Rail */
@@ -95,8 +97,10 @@
   .rv::after { content: ""; position: absolute; inset: 1px -2px; background: var(--ink); border-radius: 2px; transform: scaleX(0); transform-origin: left; transition: transform .45s cubic-bezier(.6,0,.3,1) .35s; }
   .d5.anon.voted .rv::after { transform: scaleX(1); }
 
-  /* 6 — Cadenas */
-  .d6.anon.voted .btn.on .mini { width: 15px; opacity: 1; }
+  /* 6 — Fantôme au compteur */
+  .cg { display: inline-flex; width: 0; opacity: 0; overflow: hidden; vertical-align: -2px; transition: width .3s .15s, opacity .3s .15s; color: var(--ink); }
+  .cg svg { width: 14px; height: 14px; flex: none; }
+  .d6.anon.voted .cg { width: 19px; opacity: 1; }
 
   /* 7 — Urne */
   .slot { position: absolute; bottom: -9px; width: 44px; height: 2px; border-radius: 1px; background: var(--muted); opacity: 0; transition: opacity .2s; }
@@ -155,41 +159,39 @@
 <div class="wrap">
   <header>
     <h1>Vote anonyme, version sobre</h1>
-    <p>Voter en anonyme sur le take de quelqu'un, sans fantôme ni effet mignon : des gestes d'interface discrets, comme dans une app bancaire ou un réglage iOS. A et G reprennent les deux principes retenus de la première maquette, animés ; 01 à 10 sont dix nouvelles pistes. Sur chaque carte, active l'anonymat avec l'œil, le cadenas ou l'interrupteur, puis vote Non ou Oui.</p>
+    <p>Voter en anonyme sur le take de quelqu'un : on garde le fantôme, mais avec des gestes d'interface sérieux et discrets, comme dans une app bancaire ou un réglage iOS. A et G reprennent les deux principes retenus de la première maquette, animés ; 01 à 10 sont dix nouvelles pistes. Sur chaque carte, active l'anonymat avec le fantôme, puis vote Non ou Oui.</p>
   </header>
   <div class="grid" id="grid"></div>
-  <footer>Sans le mode privé, chaque carte vote normalement. Dis-moi les numéros qui te plaisent, je peux en combiner deux.</footer>
+  <footer>Sans le fantôme, chaque carte vote normalement. Dis-moi les numéros qui te plaisent, je peux en combiner deux.</footer>
 </div>
 
 <script>
-  const eye = '<svg viewBox="0 0 24 24"><path class="ln" d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12Z"/><circle class="ln" cx="12" cy="12" r="2.8"/><path class="ln slash" d="M4 4l16 16"/></svg>'
-  const eyeOff = '<svg viewBox="0 0 24 24"><path class="ln" d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12Z"/><circle class="ln" cx="12" cy="12" r="2.8"/><path class="ln" d="M4 4l16 16"/></svg>'
-  const lock = '<svg viewBox="0 0 24 24"><rect class="ln" x="5" y="11" width="14" height="9.5" rx="2"/><path class="ln shackle" d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg>'
-  const lockClosed = '<svg viewBox="0 0 24 24"><rect class="ln" x="5" y="11" width="14" height="9.5" rx="2"/><path class="ln" d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg>'
+
+  const ghostToggle = '<svg viewBox="0 0 24 24"><path class="gp" d="M12 2.5c-4.4 0-7.5 3.3-7.5 7.6v10.6c0 .6.7.9 1.1.5l1.6-1.4 1.7 1.5c.3.3.8.3 1.1 0L12 19.8l2 1.5c.3.3.8.3 1.1 0l1.7-1.5 1.6 1.4c.4.4 1.1.1 1.1-.5V10.1c0-4.3-3.1-7.6-7.5-7.6Zm-3 9.2a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm6 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Z"/></svg>'
+  const ghost = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.5c-4.4 0-7.5 3.3-7.5 7.6v10.6c0 .6.7.9 1.1.5l1.6-1.4 1.7 1.5c.3.3.8.3 1.1 0L12 19.8l2 1.5c.3.3.8.3 1.1 0l1.7-1.5 1.6 1.4c.4.4 1.1.1 1.1-.5V10.1c0-4.3-3.1-7.6-7.5-7.6Zm-3 9.2a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm6 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Z"/></svg>'
 
   const directions = [
-    ['Ta réponse en noir', 'Le principe A de la première maquette, en animé : ton bouton passe au noir avec un cadenas, et ta part de la barre aussi.', 'A', 11],
+    ['Ta réponse en noir', 'Le principe A de la première maquette, en animé : ton bouton passe au noir avec le fantôme, et ta part de la barre aussi.', 'A', 11],
     ['Pastille « Anonyme »', 'Le principe G de la première maquette, en animé : une pastille noire « Anonyme » glisse en haut de la carte, et marque un léger battement quand tu votes.', 'G', 12],
-    ['Interrupteur', 'Un vrai interrupteur « Anonyme », comme dans les réglages iOS. Après le vote, une ligne grise confirme : Giulia voit le total, pas ton nom.'],
-    ['Œil barré', 'L\'œil se barre d\'un trait quand tu passes en privé. Ton bouton garde sa couleur, avec le même œil barré à côté du mot.'],
-    ['Rail', 'Un filet vertical apparaît sur le bord gauche de la carte en mode privé, puis prend la couleur de ton vote.'],
-    ['Double filet', 'Un vote privé ne se remplit pas : ton bouton garde un double contour à ta couleur. Plein = public, filet = privé.'],
+    ['Interrupteur', 'Le fantôme accompagné d\'un vrai interrupteur, comme dans les réglages iOS. Après le vote, une ligne grise confirme : Giulia voit le total, pas ton nom.'],
+    ['Fantôme dans le bouton', 'Le fantôme passe de contour à plein. Au vote, ton bouton garde sa couleur, avec un petit fantôme devant le mot.'],
+    ['Rail', 'Un filet vertical apparaît sur le bord gauche de la carte en mode anonyme, puis prend la couleur de ton vote.'],
+    ['Double filet', 'Un vote anonyme ne se remplit pas : ton bouton garde un double contour à ta couleur. Plein = public, filet = anonyme.'],
     ['Caviardage', 'Sous les boutons, « Ton vote : Oui », puis une barre noire vient le caviarder, comme un document classé.'],
-    ['Cadenas', 'Le cadenas se ferme quand tu passes en privé. Au vote, un petit cadenas fermé s\'installe dans ton bouton.'],
+    ['Fantôme au compteur', 'Les boutons ne changent pas. Au vote, un petit fantôme se place devant le nombre de votes, sobrement.'],
     ['Urne', 'Au vote, un bulletin à ta couleur tombe de ton bouton dans une fente qui apparaît juste en dessous, puis disparaît.'],
     ['Isoloir', 'Au vote, deux panneaux se referment sur les boutons un court instant, comme le rideau d\'un isoloir, puis se rouvrent.'],
     ['Mention', 'Aucun effet : ton bouton dit simplement « Oui · anonyme ». Le plus direct, le plus lisible.'],
-    ['Compteur roulant', 'Ton vote fait rouler le pourcentage de ton camp d\'un point, comme un cours de bourse, avec un petit cadenas à côté.'],
+    ['Compteur roulant', 'Ton vote fait rouler le pourcentage de ton camp d\'un point, comme un cours de bourse, avec un petit fantôme à côté.'],
   ]
 
   const toggle = (n) => {
-    if (n === 1) return '<button class="tg switch" type="button" aria-pressed="false" aria-label="Voter en anonyme"><span class="track"></span>Anonyme</button>'
-    if (n === 6) return `<button class="tg" type="button" aria-pressed="false" aria-label="Voter en anonyme">${lock}</button>`
-    return `<button class="tg" type="button" aria-pressed="false" aria-label="Voter en anonyme">${eye}</button>`
+    if (n === 1) return `<button class="tg switch" type="button" aria-pressed="false" aria-label="Voter en anonyme">${ghostToggle}<span class="track"></span></button>`
+    return `<button class="tg" type="button" aria-pressed="false" aria-label="Voter en anonyme">${ghostToggle}</button>`
   }
-  const mini = (n) => n === 2 ? `<span class="mini">${eyeOff}</span>` : n === 6 || n === 11 ? `<span class="mini">${lockClosed}</span>` : ''
+  const mini = (n) => n === 2 || n === 11 ? `<span class="mini">${ghost}</span>` : ''
   const pct = (cls, v, n) => n === 10
-    ? `<span class="pct ${cls}"><span class="plock" data-side="${cls === 'n' ? 'no' : 'yes'}">${lockClosed}</span><span class="num"><span>${v}</span></span><span>%</span></span>`
+    ? `<span class="pct ${cls}"><span class="plock" data-side="${cls === 'n' ? 'no' : 'yes'}">${ghost}</span><span class="num"><span>${v}</span></span><span>%</span></span>`
     : `<span class="${cls}">${v} %</span>`
 
   const card = (i, [title, why, label, id]) => {
@@ -200,7 +202,7 @@
       <p class="why">${why}</p>
       <div class="card d${n}" data-n="${n}">
         <div class="row">
-          <div class="head"><div class="face">G</div><span class="name">Giulia R.</span><span class="age">· il y a 11 h</span>${n === 12 ? `<span class="pill">${lockClosed}Anonyme</span>` : ''}<span class="dots">···</span></div>
+          <div class="head"><div class="face">G</div><span class="name">Giulia R.</span><span class="age">· il y a 11 h</span>${n === 12 ? `<span class="pill">${ghost}Anonyme</span>` : ''}<span class="dots">···</span></div>
           <p class="q">Trop de touristes à Nairobi ?</p>
           <div class="result">
             <div class="pcts">${pct('n', 33, n)}${pct('y', 67, n)}</div>
@@ -217,7 +219,7 @@
           <div class="acts">
             <svg class="i"><use href="#c"/></svg>3 <svg class="i"><use href="#r"/></svg>0
             ${toggle(n)}
-            <span class="cnt"><span class="votes">108</span> votes</span>
+            <span class="cnt">${n === 6 ? `<span class="cg">${ghost}</span>` : ''}<span class="votes">108</span> votes</span>
           </div>
         </div>
       </div>
