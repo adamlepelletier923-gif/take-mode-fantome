@@ -159,7 +159,7 @@
 <div class="wrap">
   <header>
     <h1>Vote anonyme, version sobre</h1>
-    <p>Voter en anonyme sur le take de quelqu'un : on garde le fantôme, mais avec des gestes d'interface sérieux et discrets, comme dans une app bancaire ou un réglage iOS. A et G reprennent les deux principes retenus de la première maquette, animés ; 01 à 10 sont dix nouvelles pistes. Sur chaque carte, active l'anonymat avec le fantôme, puis vote Non ou Oui.</p>
+    <p>Voter en anonyme sur le take de quelqu'un : on garde le fantôme, mais avec des gestes d'interface sérieux et discrets, comme dans une app bancaire ou un réglage iOS. « 1 + 2 » mélange les pistes 01 et 02 ; A et G reprennent les deux principes retenus de la première maquette, animés ; 01 à 10 sont dix nouvelles pistes. Sur chaque carte, active l'anonymat avec le fantôme, puis vote Non ou Oui.</p>
   </header>
   <div class="grid" id="grid"></div>
   <footer>Sans le fantôme, chaque carte vote normalement. Dis-moi les numéros qui te plaisent, je peux en combiner deux.</footer>
@@ -171,6 +171,7 @@
   const ghost = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.5c-4.4 0-7.5 3.3-7.5 7.6v10.6c0 .6.7.9 1.1.5l1.6-1.4 1.7 1.5c.3.3.8.3 1.1 0L12 19.8l2 1.5c.3.3.8.3 1.1 0l1.7-1.5 1.6 1.4c.4.4 1.1.1 1.1-.5V10.1c0-4.3-3.1-7.6-7.5-7.6Zm-3 9.2a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Zm6 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6Z"/></svg>'
 
   const directions = [
+    ['Interrupteur + fantôme dans le bouton', 'Le mélange du 1 et du 2 : le fantôme et son interrupteur, puis au vote un petit fantôme devant le mot de ton bouton et la ligne « Giulia voit le total, pas ton nom ».', '1 + 2', 13],
     ['Ta réponse en noir', 'Le principe A de la première maquette, en animé : ton bouton passe au noir avec le fantôme, et ta part de la barre aussi.', 'A', 11],
     ['Pastille « Anonyme »', 'Le principe G de la première maquette, en animé : une pastille noire « Anonyme » glisse en haut de la carte, et marque un léger battement quand tu votes.', 'G', 12],
     ['Interrupteur', 'Le fantôme accompagné d\'un vrai interrupteur, comme dans les réglages iOS. Après le vote, une ligne grise confirme : Giulia voit le total, pas ton nom.'],
@@ -186,21 +187,21 @@
   ]
 
   const toggle = (n) => {
-    if (n === 1) return `<button class="tg switch" type="button" aria-pressed="false" aria-label="Voter en anonyme">${ghostToggle}<span class="track"></span></button>`
+    if (n === 1 || n === 13) return `<button class="tg switch" type="button" aria-pressed="false" aria-label="Voter en anonyme">${ghostToggle}<span class="track"></span></button>`
     return `<button class="tg" type="button" aria-pressed="false" aria-label="Voter en anonyme">${ghostToggle}</button>`
   }
-  const mini = (n) => n === 2 || n === 11 ? `<span class="mini">${ghost}</span>` : ''
+  const mini = (n) => n === 2 || n === 11 || n === 13 ? `<span class="mini">${ghost}</span>` : ''
   const pct = (cls, v, n) => n === 10
     ? `<span class="pct ${cls}"><span class="plock" data-side="${cls === 'n' ? 'no' : 'yes'}">${ghost}</span><span class="num"><span>${v}</span></span><span>%</span></span>`
     : `<span class="${cls}">${v} %</span>`
 
   const card = (i, [title, why, label, id]) => {
-    const n = id ?? i - 1
+    const n = id ?? i - 2
     return `
     <section class="opt">
       <div class="tag"><b>${label ?? String(n).padStart(2, '0')}</b><span>${title}</span></div>
       <p class="why">${why}</p>
-      <div class="card d${n}" data-n="${n}">
+      <div class="card d${n}${n === 13 ? ' d1 d2' : ''}" data-n="${n}">
         <div class="row">
           <div class="head"><div class="face">G</div><span class="name">Giulia R.</span><span class="age">· il y a 11 h</span>${n === 12 ? `<span class="pill">${ghost}Anonyme</span>` : ''}<span class="dots">···</span></div>
           <p class="q">Trop de touristes à Nairobi ?</p>
@@ -214,7 +215,7 @@
             <button class="btn yes" type="button" aria-pressed="false">${mini(n)}<span class="lab">Oui</span></button>
             ${n === 7 ? '<span class="slot"></span>' : ''}
           </div>
-          ${n === 1 ? '<div class="cap">Vote anonyme : Giulia voit le total, pas ton nom.</div>' : ''}
+          ${n === 1 || n === 13 ? '<div class="cap">Vote anonyme : Giulia voit le total, pas ton nom.</div>' : ''}
           ${n === 5 ? '<div class="redact">Ton vote :<span class="rv"></span></div>' : ''}
           <div class="acts">
             <svg class="i"><use href="#c"/></svg>3 <svg class="i"><use href="#r"/></svg>0
